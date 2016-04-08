@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+monster_images/
+monster_images_hd/
+monster_thumbnails/
+monster_thumbnails_hd/
+.DS_Store
