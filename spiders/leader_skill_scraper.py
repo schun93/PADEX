@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
 import model
@@ -8,7 +11,7 @@ import requests
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from model import leader_skill
+from app.model.leader_skill import LeaderSkill
 
 class LeaderSkillScraper(CrawlSpider):
     name = "leader_skill_spider"
@@ -30,4 +33,4 @@ class LeaderSkillScraper(CrawlSpider):
         owned_by_monsters = [int(monster_tag["href"].encode("utf-8").split("n=")[1]) \
                              for monster_tag in soup.find("h2", text="Ability owned by ...").find_next("td").find_all("a")]
 
-        print(leader_skill.LeaderSkill(id=ls_id, name=ls_name, effect=ls_effect, original_effect=ls_original_effect, owned_by_monsters=owned_by_monsters))
+        print(LeaderSkill(id=ls_id, name=ls_name, effect=ls_effect, original_effect=ls_original_effect, owned_by_monsters=owned_by_monsters))

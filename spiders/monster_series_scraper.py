@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
-import model
 import re
 
 from bs4 import BeautifulSoup
+from app.model.monster_series import MonsterSeries
 
 class MonsterSeriesScraper(scrapy.Spider):
     L_BOUND = 0
@@ -23,7 +26,4 @@ class MonsterSeriesScraper(scrapy.Spider):
         s_monsters = [int(monster_tag["href"].split("n=")[1]) \
                      for monster_tag in soup.find("h2", text="Card Catalogue").find_previous("table", {"id" : "tablestat"}).find_all("a", href=re.compile("^monster.asp\?n="))]
 
-        print("Series ID: " + str(s_id))
-        print("Series Name: " + str(s_name))
-        print("Monsters in Series: " + str(s_monsters))
-        print("")
+        print(MonsterSeries(id=s_id, name=s_name, monsters_in_series=frozenset(s_monsters)))

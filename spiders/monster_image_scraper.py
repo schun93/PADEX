@@ -13,8 +13,8 @@ MONSTER_THUMBNAIL_PREFIX = "THMB_"
 IMAGE_TYPE = ".jpg"
 THUMBNAIL_TYPE = ".png"
 
-MONSTER_IMAGE_DIR = "monster_images/"
-MONSTER_THUMBNAIL_DIR = "monster_thumbnails/"
+MONSTER_IMAGE_DIR = "../monster_images/"
+MONSTER_THUMBNAIL_DIR = "../monster_thumbnails/"
 
 def retrieve_monster_image(id):
     image_url = monster_image_url(id) 

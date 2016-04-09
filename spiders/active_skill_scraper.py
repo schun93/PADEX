@@ -1,14 +1,16 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
-import model
 import requests
 
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from model import active_skill
+from app.model.active_skill import ActiveSkill
 
 class ActiveSkillSpider(CrawlSpider):
     name = "active_skill_spider"
@@ -50,7 +52,7 @@ class ActiveSkillSpider(CrawlSpider):
         for monster_tag in owned_by_monsters_tag.find_all("a"):
             owned_by_monsters.append(int(monster_tag["href"].split("n=")[1]))
 
-        print(active_skill.ActiveSkill(id=as_id, 
+        print(ActiveSkill(id=as_id, 
                                        name=as_name, 
                                        effect=as_effect, 
                                        original_effect=as_original_effect, 

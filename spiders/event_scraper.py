@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
 import requests
 import re
-import model
 
-from model import event
+from app.model.event import EventDungeon
+from app.model.event import DailyDungeon
 from bs4 import BeautifulSoup
 
 class EventScraper(scrapy.Spider):

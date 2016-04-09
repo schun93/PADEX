@@ -9,7 +9,7 @@ import re
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from model import monster
+from app.model import monster
 
 class MonsterScraper(CrawlSpider):
     name = "monster_spider"

@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
 import model
 
 from bs4 import BeautifulSoup
-from model import awoken_skill
+from app.model.awoken_skill import AwokenSkill
 
 class AwokenSkillSpider(scrapy.Spider):
     L_BOUND = 3
@@ -30,8 +33,8 @@ class AwokenSkillSpider(scrapy.Spider):
         for monster in monster_list:
             owned_by_monsters.append(int(monster.find("a")["href"].split("n=")[1]))
 
-        print(awoken_skill.AwokenSkill( id=as_id, 
-                                        name=as_name, 
-                                        description=as_effect, 
-                                        url=as_img_url, 
-                                        owned_by_monsters=frozenset(owned_by_monsters)))
+        print(AwokenSkill(id=as_id, 
+                          name=as_name, 
+                          description=as_effect, 
+                          url=as_img_url, 
+                          owned_by_monsters=frozenset(owned_by_monsters)))

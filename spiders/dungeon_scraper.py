@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
 import model
@@ -9,7 +12,7 @@ import re
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from model import dungeon
+from app.model.dungeon import Dungeon
 
 def represents_int(s):   
     try: 
@@ -153,4 +156,4 @@ class DungeonScraper(CrawlSpider):
                                         for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
                                         if represents_int(monster_tag.find_next("td").string)}
 
-        print(dungeon.Dungeon(id=d_id, name=d_name, random_encounters=d_random_encounter_monsters, major_encounters=d_major_encounter_monsters))
+        print(Dungeon(id=d_id, name=d_name, random_encounters=d_random_encounter_monsters, major_encounters=d_major_encounter_monsters))

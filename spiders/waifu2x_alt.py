@@ -13,11 +13,11 @@ description = 'A simple wrapper for waifu2x.'
 DEMO_API_URL = 'http://waifu2x.booru.pics'
 UPLOAD_API_ENDPOINT = '/Home/upload'
 
-SRC_MONSTER_IMG_PREFIX = "monster_images/IMG_"
-DST_MONSTER_IMG_HD_PREFIX = "monster_images_hd/HD_IMG_"
+SRC_MONSTER_IMG_PREFIX = "../monster_images/IMG_"
+DST_MONSTER_IMG_HD_PREFIX = "../monster_images_hd/HD_IMG_"
 
-SRC_MONSTER_THMB_PREFIX = "monster_thumbnails/THMB_"
-DST_MONSTER_THMB_HD_PREFIX = "monster_thumbnails_hd/HD_THMB_"
+SRC_MONSTER_THMB_PREFIX = "../monster_thumbnails/THMB_"
+DST_MONSTER_THMB_HD_PREFIX = "../monster_thumbnails_hd/HD_THMB_"
 
 IMG_TYPE = ".jpg"
 THMB_TYPE = ".png"
