@@ -4,7 +4,9 @@ import scrapy
 import bs4
 import requests
 import re
+import model
 
+from model import event
 from bs4 import BeautifulSoup
 
 class EventScraper(scrapy.Spider):
@@ -76,24 +78,48 @@ class EventScraper(scrapy.Spider):
         event_table_tag.pop(0)
 
         print("Today's Events:")
-        print(self.obtain_alert_events(event_table_tag))
-        print(self.obtain_alert_times(event_table_tag))
+        daily_dungeon_ids = self.obtain_alert_events(event_table_tag)
+        daily_dungeon_times = self.obtain_alert_times(event_table_tag)
+        daily_dungeons = [event.DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
+                         for dailies in zip(daily_dungeon_ids, daily_dungeon_times)]
+
+        for daily_dungeon in daily_dungeons:
+            print(daily_dungeon)
 
         tomorrow_table_tag = soup.find("div", id="metal1b").find_next("table", id="event").find_all("tr")
         tomorrow_table_tag.pop(0)
 
         print("Tomorrow's Events:")
-        print(self.obtain_alert_events(tomorrow_table_tag))
-        print(self.obtain_alert_times(tomorrow_table_tag))
+        tomorrow_dungeon_ids = self.obtain_alert_events(tomorrow_table_tag)
+        tomorrow_dungeon_times = self.obtain_alert_times(tomorrow_table_tag)
+        tomorrows_dungeons = [event.DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
+                         for dailies in zip(tomorrow_dungeon_ids, tomorrow_dungeon_times)]
+
+        for tomorrows_dungeon in tomorrows_dungeons:
+            print(tomorrows_dungeon)
 
         weekly_event_dungeon_table_tag = soup.find("h2", text=re.compile("NA Puzzle & Dragons Dungeon Schedule")) \
                                              .find_previous("table", id="event")
 
         print("Weekly Dungeon Event:")
-        print(self.obtain_weekly_dungeon_events(weekly_event_dungeon_table_tag))
+        weekly_dungeon_data = self.obtain_weekly_dungeon_events(weekly_event_dungeon_table_tag)
+        weekly_event_dungeons = [event.EventDungeon(start_date=weekly_event_dungeon[0][0], end_date=weekly_event_dungeon[0][1], \
+                                                    start_time=weekly_event_dungeon[1][0], end_time=weekly_event_dungeon[1][1], \
+                                                    dungeon_id=weekly_event_dungeon[2], event_info=weekly_event_dungeon[3]) \
+                                for weekly_event_dungeon in weekly_dungeon_data]
+
+        for weekly_event_dungeon in weekly_event_dungeons:
+            print(weekly_event_dungeon)
 
         weekly_event_table_tag = weekly_event_dungeon_table_tag.find_next("table", id="event")
 
         print("Weekly Event:")
-        print(self.obtain_weekly_dungeon_events(weekly_event_table_tag))
+        weekly_event_data = self.obtain_weekly_dungeon_events(weekly_event_table_tag)
+        weekly_events = [event.EventDungeon(start_date=weekly_event[0][0], end_date=weekly_event[0][1], \
+                                                    start_time=weekly_event[1][0], end_time=weekly_event[1][1], \
+                                                    dungeon_id=weekly_event[2], event_info=weekly_event[3]) \
+                                for weekly_event in weekly_event_data]
+
+        for weekly_event in weekly_events:
+            print(weekly_event)
 
