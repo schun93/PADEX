@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class LeaderSkill:
 
     def __init__(self, id, name, effect, original_effect, owned_by_monsters=frozenset()):

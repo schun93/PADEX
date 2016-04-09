@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class AwokenSkill:
 
     def __init__(self, id, name, description, url, owned_by_monsters):

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class Monster:
 
     def __init__(self, id, name, primary_type, secondary_type, ternary_type, primary_element, secondary_element, rarity, team_cost, monster_points, evolves_to, min_lvl, max_lvl, min_hp, max_hp, min_atk, max_atk, min_rcv, max_rcv, min_sell_value, max_sell_value, min_exp_feed, max_exp_feed, exp_needed, active_skill, leader_skill, awoken_skills, obtainable_in_dungeons, evolves_from, series_name):

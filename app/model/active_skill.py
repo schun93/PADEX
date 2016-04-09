@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class ActiveSkill:
 
     def __init__(self, id, name, effect, original_effect, max_cd, min_cd, max_lvl, owned_by_monsters=frozenset()):

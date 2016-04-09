@@ -5,7 +5,6 @@ sys.path.append("../")
 
 import scrapy
 import bs4
-import model
 import requests
 
 from scrapy.spiders import CrawlSpider, Rule

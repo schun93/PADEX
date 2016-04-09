@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class EventDungeon:
 
     def __init__(self, start_date, end_date, start_time, end_time, dungeon_id, event_info):

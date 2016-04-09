@@ -5,7 +5,6 @@ sys.path.append("../")
 
 import scrapy
 import bs4
-import model
 
 from bs4 import BeautifulSoup
 from app.model.awoken_skill import AwokenSkill

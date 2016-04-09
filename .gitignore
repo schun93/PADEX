@@ -5,6 +5,7 @@ monster_images_hd/
 monster_thumbnails/
 monster_thumbnails_hd/
 spiders/output/
+env/
 .DS_Store
 
 # Xcode

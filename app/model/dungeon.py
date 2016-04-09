@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class DungeonMonsterMove:
     def __init__(self, name, atk, chance, hp_threshold, description):
         self.name = name

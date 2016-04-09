@@ -5,7 +5,6 @@ sys.path.append("../")
 
 import scrapy
 import bs4
-import model
 import requests
 import re
 
@@ -67,7 +66,10 @@ class DungeonScraper(CrawlSpider):
             return "Skill"
 
     def obtain_defense_value(self, tag):
-        return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.next_sibling.find_next("span").string.encode("utf-8"))
+        try:
+            return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.next_sibling.find_next("span").string.encode("utf-8"))
+        except:
+            return 0
 
     def obtain_hp_value(self, tag):
         return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.next_sibling.next_sibling.find_next("span").string.encode("utf-8"))

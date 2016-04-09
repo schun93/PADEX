@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 class MonsterSeries:
 
     def __init__(self, id, name, monsters_in_series=frozenset()):
