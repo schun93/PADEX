@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
+import sys
+sys.path.append("../")
+
 import scrapy
 import bs4
-import model
 import requests
 import re
 
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from app.model import monster
+from app.model.monster import Monster
 
 class MonsterScraper(CrawlSpider):
     name = "monster_spider"
@@ -148,15 +150,15 @@ class MonsterScraper(CrawlSpider):
                     m_evolves_to.append((evo_to, evo_to_materials))
 
         # If Evo Material or Enhance Material don't check for Exp necessary to max
-        print(monster.Monster(id=m_id, name=m_name, primary_type=m_types[0], \
-                        secondary_type=m_types[1], ternary_type=m_types[2], primary_element=m_elements[0], \
-                        secondary_element=m_elements[1], rarity=m_rarity, team_cost=m_cost, \
-                        monster_points=m_points, evolves_to=m_evolves_to, min_lvl=m_min_lvl, \
-                        max_lvl=m_max_lvl, min_hp=m_min_hp, max_hp=m_max_hp, \
-                        min_atk=m_min_atk, max_atk=m_max_atk, min_rcv=m_min_rcv, \
-                        max_rcv=m_max_rcv, min_sell_value=m_min_sell, max_sell_value=m_max_sell, \
-                        min_exp_feed=m_min_feed_exp, max_exp_feed=m_max_feed_exp, exp_needed=m_exp_curve, \
-                        active_skill=m_active_skill, leader_skill=m_leader_skill, awoken_skills=m_awoken_skills, \
-                        obtainable_in_dungeons=m_obtained_in_dungeons, evolves_from=m_evolves_from, series_name=m_series_name))
+        print(Monster(id=m_id, name=m_name, primary_type=m_types[0], \
+                      secondary_type=m_types[1], ternary_type=m_types[2], primary_element=m_elements[0], \
+                      secondary_element=m_elements[1], rarity=m_rarity, team_cost=m_cost, \
+                      monster_points=m_points, evolves_to=m_evolves_to, min_lvl=m_min_lvl, \
+                      max_lvl=m_max_lvl, min_hp=m_min_hp, max_hp=m_max_hp, \
+                      min_atk=m_min_atk, max_atk=m_max_atk, min_rcv=m_min_rcv, \
+                      max_rcv=m_max_rcv, min_sell_value=m_min_sell, max_sell_value=m_max_sell, \
+                      min_exp_feed=m_min_feed_exp, max_exp_feed=m_max_feed_exp, exp_needed=m_exp_curve, \
+                      active_skill=m_active_skill, leader_skill=m_leader_skill, awoken_skills=m_awoken_skills, \
+                      obtainable_in_dungeons=m_obtained_in_dungeons, evolves_from=m_evolves_from, series_name=m_series_name))
 
 

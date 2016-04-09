@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 
-import sys
-sys.path.append("../")
-
 import scrapy
 import bs4
 import requests
