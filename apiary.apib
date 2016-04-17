@@ -390,3 +390,257 @@ PADAPI is a simple API allowing for the retrieval of all information related to 
             ],
             "total_awoken_skills": 10
         }
+
+## Monster Series [/monster_series/thin/{monster_series_id}]
+
+### View a Thin Monster Series [GET]
+
++ Parameters
+    + monster_series_id (integer) - ID of an Monster Series
+
++ Response 200 (application/json)
+
+        {
+            "id": 54,
+            "name": "God Fest. Exclusive"
+        }
+
+### View all Thin Monster Series [GET /monster_series/thin/{?offset,limit}]
+
++ Parameters
+    + offset (integer, optional) - ID of the first Monster Series to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Monster Series to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "monster_series": [
+                {
+                    "id": 54,
+                    "name": "God Fest. Exclusive"
+                },
+                {
+                    "id": 55,
+                    "name": "Japanese Mythology"
+                },
+                {
+                    "id": 56,
+                    "name": "Stone Dragon"
+                },
+                ...
+            ],
+            "total_monster_series": 10
+        }
+
+### View a Monster Series [GET /monster_series/{monster_series_id}]
+
++ Parameters
+    + monster_series_id (integer) - ID of an Monster Series
+
++ Response 200 (application/json)
+
+        {
+            "id": 54,
+            "name": "God Fest. Exclusive",
+            "monsters_in_series": [
+                2714,
+                2744,
+                2745,
+                ...
+            ]
+        }
+
+### View all Monster Series [GET /monster_series/{?offset,limit}]
+
++ Parameters
+    + offset (integer, optional) - ID of the first Monster Series to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Monster Series to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "monster_series": [
+                {
+                    "id": 54,
+                    "name": "God Fest. Exclusive",
+                    "monsters_in_series": [
+                        2714,
+                        2744,
+                        2745,
+                        ...
+                    ]
+                },
+                {
+                    "id": 55,
+                    "name": "Japanese Mythology",
+                    "monsters_in_series": [
+                        717,
+                        718,
+                        777,
+                        ...
+                    ]
+                },
+                {
+                    "id": 56,
+                    "name": "Stone Dragon",
+                    "monster_series": [
+                        737,
+                        738,
+                        739,
+                        ...
+                    ]
+                },
+                ...
+            ],
+            "total_monster_series": 10
+        }
+
+## Type [/type/thin/{type_id}]
+
+### View a Thin Type [GET]
+
++ Parameters
+    + type_id (integer) - ID of a Type
+
++ Response 200 (application/json)
+
+        {
+            "id": 5,
+            "name": "Attacker"
+        }
+
+### View all Thin Type [GET /type/thin/{?offset,limit}]
+
++ Parameters
+    + offset (integer, optional) - ID of the first Type to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Type to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "types": [
+                {
+                    "id": 5,
+                    "name": "Attacker"
+                },
+                {
+                    "id": 6,
+                    "name": "God"
+                },
+                {
+                    "id": 7,
+                    "name": "Evo Material"
+                },
+                ...
+            ],
+            "total_types": 10
+        }
+
+### View a Type [GET /type/{type_id}]
+
++ Parameters
+    + type_id (integer) - ID of a Type
+
++ Response 200 (application/json)
+
+        {
+            "id": 5,
+            "name": "Attacker",
+            "primary_type_owned_by": [
+                2812,
+                2815,
+                2818,
+                ...
+            ],
+            "secondary_type_owned_by": [
+                2747,
+                2748,
+                2750,
+                ...
+            ],
+            "ternary_type_owned_by": [
+                1473,
+                1727,
+                1728,
+                ...
+            ]
+        }
+
+### View all Type [GET /type/{?offset,limit}]
+
++ Parameters
+    + offset (integer, optional) - ID of the first Type to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Type to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "types": [
+                {
+                    "id": 5,
+                    "name": "Attacker",
+                    "primary_type_owned_by": [
+                        2812,
+                        2815,
+                        2818,
+                        ...
+                    ],
+                    "secondary_type_owned_by": [
+                        2747,
+                        2748,
+                        2750,
+                        ...
+                    ],
+                    "ternary_type_owned_by": [
+                        1473,
+                        1727,
+                        1728,
+                        ...
+                    ]
+                },
+                {
+                    "id": 6,
+                    "name": "God",
+                    "primary_type_owned_by": [
+                        2742,
+                        2752,
+                        2790,
+                        ...
+                    ],
+                    "secondary_type_owned_by": [
+                        2700,
+                        2701,
+                        2702,
+                        ...
+                    ],
+                    "ternary_type_owned_by": [
+                        535,
+                        1206,
+                        2127,
+                        ...
+                    ]
+                },
+                {
+                    "id": 7,
+                    "name": "Evo Material",
+                    "primary_type_owned_by": [
+                        1085,
+                        1086,
+                        1087,
+                        ...
+                    ],
+                    "secondary_type_owned_by": [],
+                    "ternary_type_owned_by": []
+                },
+                ...
+            ],
+            "total_types": 10
+        }
