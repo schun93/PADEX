@@ -1,6 +1,18 @@
-class ActiveSkill:
+from app.model.base import db
 
-    def __init__(self, id, name, effect, original_effect, max_cd, min_cd, max_lvl, owned_by_monsters=frozenset()):
+class ActiveSkill(db.Model):
+
+    __tablename__ = "active_skill"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    effect = db.Column(db.String(256), nullable=False)
+    original_effect = db.Column(db.String(256), nullable=False)
+    max_cd = db.Column(db.String(80))
+    min_cd = db.Column(db.String(80))
+    max_lvl = db.Column(db.String(80))
+
+    def __init__(self, id, name, effect, original_effect, max_cd, min_cd, max_lvl):
         self.id = id
         self.name = name
         self.effect = effect
@@ -9,16 +21,11 @@ class ActiveSkill:
         self.min_cd = min_cd
         self.max_lvl = max_lvl
 
-        # List of foreign keys
-        self.owned_by_monsters = owned_by_monsters
-
     def __str__(self):
-        return "ActiveSkill\nID: " + str(self.id) + \
+        return "\nID: " + str(self.id) + \
                "\nName: " + self.name + \
                "\nEffect: " + self.effect + \
                "\nOriginal Effect: " + self.original_effect + \
-               "\nMax CD: " + self.max_cd + \
-               "\nMin CD: " + self.min_cd + \
-               "\nMax Lvl: " + self.max_lvl + \
-               "\nOwned By Monsters: " + str(self.owned_by_monsters) + \
-               "\n"
+               "\nMax CD: " + str(self.max_cd) + \
+               "\nMin CD: " + str(self.min_cd) + \
+               "\nMax Lvl: " + str(self.max_lvl)

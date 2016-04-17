@@ -83,7 +83,7 @@ class EventScraper(scrapy.Spider):
         print("Today's Events:")
         daily_dungeon_ids = self.obtain_alert_events(event_table_tag)
         daily_dungeon_times = self.obtain_alert_times(event_table_tag)
-        daily_dungeons = [event.DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
+        daily_dungeons = [DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
                          for dailies in zip(daily_dungeon_ids, daily_dungeon_times)]
 
         for daily_dungeon in daily_dungeons:
@@ -95,7 +95,7 @@ class EventScraper(scrapy.Spider):
         print("Tomorrow's Events:")
         tomorrow_dungeon_ids = self.obtain_alert_events(tomorrow_table_tag)
         tomorrow_dungeon_times = self.obtain_alert_times(tomorrow_table_tag)
-        tomorrows_dungeons = [event.DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
+        tomorrows_dungeons = [DailyDungeon(dungeon_id=dailies[0], start_time=dailies[1]) \
                          for dailies in zip(tomorrow_dungeon_ids, tomorrow_dungeon_times)]
 
         for tomorrows_dungeon in tomorrows_dungeons:
@@ -106,7 +106,7 @@ class EventScraper(scrapy.Spider):
 
         print("Weekly Dungeon Event:")
         weekly_dungeon_data = self.obtain_weekly_dungeon_events(weekly_event_dungeon_table_tag)
-        weekly_event_dungeons = [event.EventDungeon(start_date=weekly_event_dungeon[0][0], end_date=weekly_event_dungeon[0][1], \
+        weekly_event_dungeons = [EventDungeon(start_date=weekly_event_dungeon[0][0], end_date=weekly_event_dungeon[0][1], \
                                                     start_time=weekly_event_dungeon[1][0], end_time=weekly_event_dungeon[1][1], \
                                                     dungeon_id=weekly_event_dungeon[2], event_info=weekly_event_dungeon[3]) \
                                 for weekly_event_dungeon in weekly_dungeon_data]
@@ -118,7 +118,7 @@ class EventScraper(scrapy.Spider):
 
         print("Weekly Event:")
         weekly_event_data = self.obtain_weekly_dungeon_events(weekly_event_table_tag)
-        weekly_events = [event.EventDungeon(start_date=weekly_event[0][0], end_date=weekly_event[0][1], \
+        weekly_events = [EventDungeon(start_date=weekly_event[0][0], end_date=weekly_event[0][1], \
                                                     start_time=weekly_event[1][0], end_time=weekly_event[1][1], \
                                                     dungeon_id=weekly_event[2], event_info=weekly_event[3]) \
                                 for weekly_event in weekly_event_data]

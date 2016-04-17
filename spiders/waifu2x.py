@@ -1,6 +1,7 @@
 import sys
 import requests
 import time
+import os
 
 description = 'A simple wrapper for waifu2x.'
 DEMO_API_URL = 'http://waifu2x.udp.jp/api'
@@ -70,21 +71,25 @@ def dst_monster_thumbnail_hd_name(id):
     return DST_MONSTER_THMB_HD_PREFIX + str(id) + DST_TYPE
 
 def process_monster(id, scale, noise, should_process_image, should_process_thumbnail):
-    if should_process_image:
+    if should_process_image and not os.path.isfile(dst_monster_image_hd_name(id)):
         try:
             convert_monster_image_hd(id, scale, noise)
             print("Retrieved monster img: " + str(id))
         except Exception as e:
             print("Error: " + str(e))
             print("Could not find monster image " + str(id))
+    else:
+        print("Monster IMG " + str(id) + " retrieval not necessary")
 
-    if should_process_thumbnail:
+    if should_process_thumbnail and not os.path.isfile(dst_monster_thumbnail_hd_name(id)):
         try:
             convert_monster_thumbnail_hd(id, scale, noise)
             print("Retrieved monster thmb: " + str(id))
         except Exception as e:
             print("Error: " + str(e))
             print("Could not find monster thumbnail " + str(id))
+    else:
+        print("Monster THMB " + str(id) + " retrieval not necessary")
 
 def main():
     l_bound = int(sys.argv[1])
@@ -96,7 +101,6 @@ def main():
 
     for i in range(l_bound, u_bound + 1):
         process_monster(i, scale, noise, should_process_image, should_process_thumbnail)
-        time.sleep(3)
 
 
 if __name__ == '__main__':

@@ -1,55 +1,69 @@
 // Model Tables
 
-[ Dungeon | id:PK.Int; name:String; random_encounters:list(backref.EnemyMonster); major_encounters:list(backref.EnemyMonster) ]
+[ CommonMonster | id: PK.Int; name:String; primary_type:FK.Type.id; secondary_type:FK.Type.id; ternary_type:FK.Type.id; primary_element:FK.Element.id; secondary_element:FK.Element.id; img:String ]
 
-[ EnemyMonster | id:PK.Int; hp:Int; atk:Int; defn:Int; turn:Int; floor:Int; quantity:Int; monster:Monster; dungeon_id:FK.Dungeon.id; primary_type_id:FK.Type.id; secondary_type_id:FK.Type.id; ternary_type_id:Type; moves:list(backref.EnemyMonsterMove) ]
+[ Dungeon | id:PK.Int; name:String; random_encounters:list(FK.EnemyMonster.id); major_encounters:list(FK.EnemyMonster.id) ]
 
-[ EnemyMonsterMove | id:PK.Int; dungeon_monster_id:FK.EnemyMonster.id; atk:Int; attack_condition:String; skill:backref.EnemySkill ]
+[ EnemyMonster | id:PK.Int; hp:Int; atk:Int; defn:Int; turn:Int; floor:Int; quantity:Int; common_monster:FK.CommonMonster.id; dungeon:FK.Dungeon.id; moves:list(FK.EnemyMove.id) ]
 
-[ EnemySkill | id:PK.Int; name:String; effect:String; owned_by_monsters:list(FK.Monster.id) ]
+[ EnemyMove | id:PK.Int; dungeon_monster_id:FK.EnemyMonster.id; atk:Int; attack_condition:String; skill:FK.EnemySkill.id ]
+
+[ EnemySkill | id:PK.Int; name:String; effect:String; part_of_moves:list(FK.EnemyMove.id) ]
 
 [ EnemySkill-Monster-N | id:PK.Int; enemy_skill_id:FK.EnemySkill.id; monster_id:FK.Monster.id ]
 
-[ Type | id:PK.Int; name:String; owned_by_monsters:list(backref.Monster) ]
+[ Type | id:PK.Int; name:String; primary_type_owned_by_monsters:list(FK.CommonMonster.id); secondary_type_owned_by_monsters:list(FK.CommonMonster.id); ternary_type_owned_by_monsters:list(FK.CommonMonster.id); primary_element_owned_by_monsters:list(FK.CommonMonster.id); secondary_element_owned_by_monsters:list(FK.CommonMonster.id) ]
 
-[ Element | id:PK.Int; name:String; owned_by_monsters:list(backref.Monster) ]
+[ Element | id:PK.Int; name:String; primary_element_owned_by_monsters:list(FK.CommonMonster.id); secondary_element_owned_by_monsters:list(FK.CommonMonster.id) ]
 
-[ MonsterSeries | id:PK.Int; name:String; monsters_in_series:list(backref.Monster) ]
+[ MonsterSeries | id:PK.Int; name:String; monsters_in_series:list(FK.Monster.id) ]
 
-[ ActiveSkill | id:PK.Int; name:String; effect:String; original_effect:String; max_cd:Int; min_cd:Int; max_lvl:Int; owned_by_monsters:list(backref.Monster) ]
+[ ActiveSkill | id:PK.Int; name:String; effect:String; original_effect:String; max_cd:Int; min_cd:Int; max_lvl:Int; owned_by_monsters:list(FK.Monster.id) ]
 
-[ LeaderSkill | id:PK.Int; name:String; effect:String; original_effect:String; owned_by_monsters:list(backref.Monster) ]
+[ LeaderSkill | id:PK.Int; name:String; effect:String; original_effect:String; owned_by_monsters:list(FK.Monster.id) ]
 
 [ AwokenSkill | id:PK.Int; name:String; description:String; owned_by_monsters:list(FK.Monster.id) ]
 
 [ AwokenSkill-Monster-N | id:PK.Int; awoken_skill_id:FK.AwokenSkill.id; monster_id:FK.Monster.id ]
 
-[ Monster | id:PK.Int; name:String; primary_type: backref.Type; secondary_type: backref.Type; primary_element:backref.Element; secondary_element:backref.Element; rarity:Int; team_cost:Int; sells_for_monster_points:Int; evolves_to:list(FK.Monster.id); evolves_from:FK.Monster.id; min_lvl:Int; max_lvl:Int; min_hp:Int; max_hp:Int; min_atk:Int; max_atk:Int; min_defn:Int; max_defn:Int; min_rcv:Int; max_rcv:Int; min_sell_value:Int; max_sell_value:Int; min_exp_feed:Int; max_exp_feed:Int; exp_needed:Int; active_skill:backref.ActiveSkill; leader_skill:backref.LeaderSkill; awoken_skills:list(FK.AwokenSkill.id); obtainable_in_dungeons:list(FK.EnemyMonster.dungeon_id); series_id:list(FK.MonsterSeries.id); enemy_skills:list(FK.EnemySkill.id) ]
+[ Monster | id:PK.Int; name:String; primary_element:FK.Element.id; secondary_element:FK.Element.id; rarity:Int; team_cost:Int; sells_for_monster_points:Int; evolves_to:list(FK.Evolution.id); evolves_from:FK.Evolution.id; min_lvl:Int; max_lvl:Int; min_hp:Int; max_hp:Int; min_atk:Int; max_atk:Int; min_defn:Int; max_defn:Int; min_rcv:Int; max_rcv:Int; min_sell_value:Int; max_sell_value:Int; min_exp_feed:Int; max_exp_feed:Int; exp_needed:Int; common_monster:FK.CommonMonster.id; active_skill:FK.ActiveSkill.id; leader_skill:FK.LeaderSkill.id; awoken_skills:list(FK.AwokenSkill.id); obtainable_in_dungeons:list(FK.EnemyMonster.dungeon_id); series_id:list(FK.MonsterSeries.id); enemy_skills:list(FK.EnemySkill.id) ]
+
+[ Evolution | id:PK.Int; from_monster:FK.Monster.id; to_monster:FK.Monster.id; required_evolution:list(FK.Monster.id) ]
+
+[ required_materials_evolution_n | id:PK.Int; evolution_id:FK.Evolution.id; monster_id:FK.Monster.id ]
 
 
 // Dungeon UML
 
 [Dungeon]1-*[EnemyMonster]
-[EnemyMonster]1-*[EnemyMonsterMove]
-[EnemyMonster]*-1[Monster]
+[EnemyMonster]1-*[EnemyMove]
+[EnemyMonster]*-1[CommonMonster]
 [EnemySkill]1-*[EnemySkill-Monster-N]
-[EnemyMonsterMove]*-1[EnemySkill]
+[EnemyMove]*-1[EnemySkill]
 
 
 // Monster UML
 
+[Monster]1-1[CommonMonster]
+[Monster]1-*[Evolution]
 [Monster]1-*[EnemySkill-Monster-N]
 [Monster]1-*[AwokenSkill-Monster-N]
+[Monster]1-*[required_materials_evolution_n]
 
+
+// Evolution UML
+
+[Evolution]1-1[Monster]
+[Evolution]1-*[required_materials_evolution_n]
 
 // Type UML
 
-[Type]1..3-*[Monster]
+[Type]1..3-*[CommonMonster]
 
 
 // Element UML
 
-[Element]1..2-*[Monster]
+[Element]1..2-*[CommonMonster]
 
 
 // Monster-Series UML
@@ -59,12 +73,12 @@
 
 // Active-Skill UML
 
-[ActiveSkill]1-*[Monster]
+[ActiveSkill]0..1-*[Monster]
 
 
 // Leader-Skill UML
 
-[LeaderSkill]1-*[Monster]
+[LeaderSkill]0..1-*[Monster]
 
 
 // Awoken-Skill UML

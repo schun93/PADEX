@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+import os
 
 from urllib import request
 from PIL import Image
@@ -48,17 +49,22 @@ def crop_monster_image(img_path):
 def process_monster(id):
     save_dir = MONSTER_IMAGE_DIR + monster_image_name(id)
 
-    try:
-        retrieve_monster_image(id)
-        crop_monster_image(save_dir)
-    except:
-        print("Could not retrieve image for monster " + str(id))
+    if not os.path.isfile(MONSTER_IMAGE_DIR + monster_image_name(id)):
+        try:
+            retrieve_monster_image(id)
+            crop_monster_image(save_dir)
+        except:
+            print("Could not retrieve image for monster " + str(id))
+    else:
+        print("Monster IMG " + str(id) + " already exists")
 
-
-    try:
-        retrieve_monster_thumbnail(id)
-    except:
-        print("Could not retrieve thumbnail for monster " + str(id))
+    if not os.path.isfile(MONSTER_THUMBNAIL_DIR + monster_thumbnail_name(id)):
+        try:
+            retrieve_monster_thumbnail(id)
+        except:
+            print("Could not retrieve thumbnail for monster " + str(id))
+    else:
+        print("Monster THMB " + str(id) + " already exists")
 
 def main():
     l_bound = int(sys.argv[1])

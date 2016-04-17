@@ -1,0 +1,392 @@
+FORMAT: 1A
+HOST: http://padex.com/api/v1
+
+# PADAPI
+
+PADAPI is a simple API allowing for the retrieval of all information related to the game Puzzle and Dragons.
+
+## Leader Skill [/leader_skill/thin/{leader_skill_id}]
+
+### View a Thin Leader Skill [GET]
+
++ Parameters
+    + leader_skill_id (integer) - ID of an Leader Skill
+
++ Response 200 (application/json)
+
+        {
+            "id": 2169,
+            "name": "Eternal Dragon Pact - Fragrem",
+            "effect": "Light attribute cards HP x2, ATK x2.5. Light attribute cards ATK x1.3 on the turn a skill is used. ( Multiple skills will not stack )",
+            "original_effect": "2x HP & 2.5x ATK for Light Att.; ATK increases slightly for Light Att. when skills used"
+        }
+
+### View all Thin Leader Skill [GET /leader_skill/thin/{?offset,limit}]
+    
++ Parameters
+    + offset (integer, optional) - ID of the first Leader Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Leader Skill to return
+        + Default: 10 
+    
++ Response 200 (application/json)
+
+        {
+            "leader_skills": [
+                {
+                    "id": 2169,
+                    "name": "Eternal Dragon Pact - Fragrem",
+                    "effect": "Light attribute cards HP x2, ATK x2.5. Light attribute cards ATK x1.3 on the turn a skill is used. ( Multiple skills will not stack )",
+                    "original_effect": "2x HP & 2.5x ATK for Light Att.; ATK increases slightly for Light Att. when skills used"
+                }, 
+                {
+                    "id": 2206,
+                    "name": "Mechanical Light Star of Gemini",
+                    "effect": " Matched attribute ATK x4 when matching exactly 5 connected orbs with at least 1 enhanced orb. 30% Fire, Water, Wood & Dark damage reduction.",
+                    "original_effect": "4x ATK for Att. erasing 5 Orbs with 1+ enhanced; reduces damage from non-Light Att. enemies"
+                },
+                {
+                    "id": 1829,
+                    "name": "Scarlet Talisman",
+                    "effect": "ATK x2.5 when attacking with Fire & Light orb types at the same time. Matched attribute ATK x2.5 when matching exactly 5 connected orbs with at least 1 enhanced orb.",
+                    "original_effect": "2.5x ATK when Fire & Light attack at once; 2.5x ATK for Att. erasing 5 Orbs including enhanced"
+                },
+                ...
+            ],
+            "total_leader_skills": 10
+        }
+
+### View a Leader Skill [GET /leader_skill/{leader_skill_id}]
+
++ Parameters
+    + leader_skill_id (integer) - ID of an Leader Skill
+
++ Response 200 (application/json)
+
+        {
+            "id": 2169,
+            "name": "Eternal Dragon Pact - Fragrem",
+            "effect": "Light attribute cards HP x2, ATK x2.5. Light attribute cards ATK x1.3 on the turn a skill is used. ( Multiple skills will not stack )",
+            "original_effect": "2x HP & 2.5x ATK for Light Att.; ATK increases slightly for Light Att. when skills used",
+            "owned_by_monsters": [
+                2440,
+                2441
+            ]
+        }
+
+### View all Leader Skill [GET /leader_skill/{?offset,limit}]
+    
++ Parameters
+    + offset (integer, optional) - ID of the first Leader Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Leader Skill to return
+        + Default: 10 
+    
++ Response 200 (application/json)
+
+        {
+            "leader_skills": [
+                {
+                    "id": 2169,
+                    "name": "Eternal Dragon Pact - Fragrem",
+                    "effect": "Light attribute cards HP x2, ATK x2.5. Light attribute cards ATK x1.3 on the turn a skill is used. ( Multiple skills will not stack )",
+                    "original_effect": "2x HP & 2.5x ATK for Light Att.; ATK increases slightly for Light Att. when skills used",
+                    "owned_by_monsters": [
+                        2440,
+                        2441
+                    ]
+                }, 
+                {
+                    "id": 2206,
+                    "name": "Mechanical Light Star of Gemini",
+                    "effect": " Matched attribute ATK x4 when matching exactly 5 connected orbs with at least 1 enhanced orb. 30% Fire, Water, Wood & Dark damage reduction.",
+                    "original_effect": "4x ATK for Att. erasing 5 Orbs with 1+ enhanced; reduces damage from non-Light Att. enemies",
+                    "owned_by_monsters": [
+                        2421,
+                        2422
+                    ]
+                },
+                {
+                    "id": 1829,
+                    "name": "Scarlet Talisman",
+                    "effect": "ATK x2.5 when attacking with Fire & Light orb types at the same time. Matched attribute ATK x2.5 when matching exactly 5 connected orbs with at least 1 enhanced orb.",
+                    "original_effect": "2.5x ATK when Fire & Light attack at once; 2.5x ATK for Att. erasing 5 Orbs including enhanced",
+                    "owned_by_monsters": [
+                        2141,
+                        2142
+                    ]
+                },
+                ...
+            ],
+            "total_leader_skills": 10
+        }
+
+## Active Skill [/active_skill/thin/{active_skill_id}]
+
++ Parameters
+    + active_skill_id (integer) - ID of an Active Skill
+
+### View a Thin Active Skill [GET]
+
++ Response 200 (application/json)
+
+        {
+            "id": 1567,
+            "name": "Shine Flare Ring",
+            "effect": "Change all orbs to Fire, Light & Heart orbs. Reduces cooldown of other skills by 1 turn.",
+            "original_effect": "Changes Orbs to Fire, Light & Heal Orbs; other allies' skills charged by 1 turn",
+            "max_cd": 15,
+            "min_cd": 10,
+            "max_lvl": 6
+        }
+
+### View all Thin Active Skill [GET /active_skill/thin/{?offset,limit}]
+    
++ Parameters
+    + offset (integer, optional) - ID of the first Active Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Active Skill to return
+        + Default: 10 
+    
++ Response 200 (application/json)
+
+        {
+            "active_skills": [
+                {
+                    "id": 1320,
+                    "name": "Dimension Formation - Scarlet Sun",
+                    "effect": "Randomly spawn 3 Fire & Light orbs from non Fire & Light orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Creates 3 Fire and Light Orbs each at random; other allies' skills charged by 1 turn",
+                    "max_cd": 12,
+                    "min_cd": 7,
+                    "max_lvl": 6
+                }, 
+                {
+                    "id": 1567,
+                    "name": "Shine Flare Ring",
+                    "effect": "Change all orbs to Fire, Light & Heart orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Changes Orbs to Fire, Light & Heal Orbs; other allies' skills charged by 1 turn",
+                    "max_cd": 15,
+                    "min_cd": 10,
+                    "max_lvl": 6
+                },
+                {
+                    "id": 1583,
+                    "name": "Astrocharge - Light",
+                    "effect": "Change Heart, Jammer, Poison & Mortal Poison orbs to Light orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Changes Jammers, Poison & Heal Orbs to Light Orbs; other allies' skills charged by 1 turn",
+                    "max_cd": 12,
+                    "min_cd": 7,
+                    "max_lvl": 6
+                },
+                ...
+            ],
+            "total_active_skills": 10
+        }
+
+### View an Active Skill [GET /active_skill/{active_skill_id}]
+
++ Parameters
+    + active_skill_id (integer) - ID of an Active Skill
+
++ Response 200 (application/json)
+
+        {
+            "id": 1567,
+            "name": "Shine Flare Ring",
+            "effect": "Change all orbs to Fire, Light & Heart orbs. Reduces cooldown of other skills by 1 turn.",
+            "original_effect": "Changes Orbs to Fire, Light & Heal Orbs; other allies' skills charged by 1 turn",
+            "max_cd": 15,
+            "min_cd": 10,
+            "max_lvl": 6,
+            "owned_by_monsters": [
+                430,
+                2440,
+                2441
+            ]
+        }
+
+### View all Active Skill [GET /active_skill/{?offset,limit}]
+
++ Parameters
+    + offset (integer, optional) - ID of the first Active Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Active Skill to return
+        + Default: 10
+        
++ Response 200 (application/json)
+
+        {
+            "active_skills": [
+                {
+                    "id": 1320,
+                    "name": "Dimension Formation - Scarlet Sun",
+                    "effect": "Randomly spawn 3 Fire & Light orbs from non Fire & Light orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Creates 3 Fire and Light Orbs each at random; other allies' skills charged by 1 turn",
+                    "max_cd": 12,
+                    "min_cd": 7,
+                    "max_lvl": 6,
+                    "owned_by_monsters": [
+                        1176,
+                        2141,
+                        2142
+                    ]
+                }, 
+                {
+                    "id": 1567,
+                    "name": "Shine Flare Ring",
+                    "effect": "Change all orbs to Fire, Light & Heart orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Changes Orbs to Fire, Light & Heal Orbs; other allies' skills charged by 1 turn",
+                    "max_cd": 15,
+                    "min_cd": 10,
+                    "max_lvl": 6,
+                    "owned_by_monsters": [
+                        430,
+                        2440,
+                        2441
+                    ]
+                },
+                {
+                    "id": 1583,
+                    "name": "Astrocharge - Light",
+                    "effect": "Change Heart, Jammer, Poison & Mortal Poison orbs to Light orbs. Reduces cooldown of other skills by 1 turn.",
+                    "original_effect": "Changes Jammers, Poison & Heal Orbs to Light Orbs; other allies' skills charged by 1 turn",
+                    "max_cd": 12,
+                    "min_cd": 7,
+                    "max_lvl": 6,
+                    "owned_by_monsters": [
+                        2421,
+                        2422,
+                        2645
+                    ]
+                },
+                ...
+            ],
+            "total_active_skills": 10
+        }
+
+## Awoken Skill [/awoken_skill/thin/{awoken_skill_id}]
+
+### View a Thin Awoken Skill [GET]
+
++ Parameters
+    + awoken_skill_id (integer) - ID of an Awoken Skill
+
++ Response 200 (application/json)
+
+        {
+            "id": 29,
+            "name": "Two-Pronged Attack",
+            "effect": "Eliminating exactly 4 connected orbs of the same color for 1.5x ATK on 2 enemies",
+            "img": "/img/29.png"
+        }
+
+### View all Thin Awoken Skill [GET /awoken_skill/thin/{?offset,limit}]
+    
++ Parameters
+    + offset (integer, optional) - ID of the first Awoken Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Awoken Skill to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "awoken_skills": [
+                {
+                    "id": 23,
+                    "name": "Skill Boost",
+                    "effect": "The entire team starts with 1 turn worth of skills charged",
+                    "img": "/img/23.png"
+                },
+                {
+                    "id": 24,
+                    "name": "Enhanced Fire Attribute",
+                    "effect": "Eliminating 1 row of fire orbs will increase your fire damage by 10%",
+                    "img": "/img/24.png"
+                },
+                {
+                    "id": 29,
+                    "name": "Two-Pronged Attack",
+                    "effect": "Eliminating exactly 4 connected orbs of the same color for 1.5x ATK on 2 enemies",
+                    "img": "/img/29.png"
+                },
+                ...
+            ],
+            "total_awoken_skills": 10
+        }
+
+### View an Awoken Skill [GET /awoken_skill/{awoken_skill_id}]
+
++ Parameters
+    + awoken_skill_id (integer) - ID of an Awoken Skill
+
++ Response 200 (application/json)
+
+        {
+            "id": 29,
+            "name": "Two-Pronged Attack",
+            "effect": "Eliminating exactly 4 connected orbs of the same color for 1.5x ATK on 2 enemies",
+            "img": "/img/29.png",
+            "owned_by_monsters": [
+                1727,
+                1728,
+                1729,
+                1730,
+                ...
+            ]
+        }
+
+### View all Thin Awoken Skill [GET /awoken_skill/{?offset,limit}]
+    
++ Parameters
+    + offset (integer, optional) - ID of the first Awoken Skill to be returned
+        + Default: 0
+    + limit (integer, optional) - Number of Awoken Skill to return
+        + Default: 10 
+
++ Response 200 (application/json)
+
+        {
+            "awoken_skills": [
+                {
+                    "id": 23,
+                    "name": "Skill Boost",
+                    "effect": "The entire team starts with 1 turn worth of skills charged",
+                    "img": "/img/23.png",
+                    "owned_by_monsters": [
+                        394,
+                        395,
+                        1928,
+                        ...
+                    ]
+                },
+                {
+                    "id": 24,
+                    "name": "Enhanced Fire Attribute",
+                    "effect": "Eliminating 1 row of fire orbs will increase your fire damage by 10%",
+                    "img": "/img/24.png",
+                    "owned_by_monsters": [
+                        652,
+                        1344,
+                        2392,
+                        ...
+                    ]
+                },
+                {
+                    "id": 29,
+                    "name": "Two-Pronged Attack",
+                    "effect": "Eliminating exactly 4 connected orbs of the same color for 1.5x ATK on 2 enemies",
+                    "img": "/img/29.png",
+                    "owned_by_monsters": [
+                        1727,
+                        1728,
+                        1729,
+                        1730,
+                        ...
+                    ]
+                },
+                ...
+            ],
+            "total_awoken_skills": 10
+        }

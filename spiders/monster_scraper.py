@@ -8,10 +8,20 @@ import bs4
 import requests
 import re
 
+from scrapy import signals
+from scrapy.xlib.pydispatch import dispatcher
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
-from app.model.monster import Monster
+
+from app.model.base import db
+from app.model.monster import Monster, CommonMonster, awoken_skill_monster_n
+from app.model.type import Type
+from app.model.element import Element
+from app.model.active_skill import ActiveSkill
+from app.model.leader_skill import LeaderSkill
+from app.model.awoken_skill import AwokenSkill
+from app.model.monster_series import MonsterSeries
 
 class MonsterScraper(CrawlSpider):
     name = "monster_spider"
@@ -22,6 +32,60 @@ class MonsterScraper(CrawlSpider):
                            callback="parse_monster", follow=True),
     )
 
+    def __init__(self, *a, **kw):
+        super(MonsterScraper, self).__init__(*a, **kw)
+
+        print("Starting spider")
+        db.metadata.drop_all(db.engine, tables=[Type.__table__, Element.__table__, Monster.__table__, CommonMonster.__table__, awoken_skill_monster_n])
+        db.metadata.create_all(db.engine, tables=[awoken_skill_monster_n, Monster.__table__, CommonMonster.__table__, Type.__table__, Element.__table__])
+
+        self.monsters = {}
+        self.common_monsters = {}
+        self.types = {}
+        self.elements = {}
+
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+
+    def spider_closed(self, spider):
+        print("Populating Monster table")
+        for monster in self.monsters.itervalues():
+            print("Monster ID: " + str(monster.id))
+            # db.session.add(monster)
+            # db.session.commit()
+
+        for common_monster in self.common_monsters.itervalues():
+            print("Common Monster ID: " + str(common_monster.id))
+            # db.session.add(common_monster)
+            # db.session.commit()
+
+        for type in self.types.itervalues():
+            print("Type ID: " + str(type.id))
+            # db.session.add(type)
+            # db.session.commit()
+
+        for element in self.elements.itervalues():
+            print("Element ID: " + str(element.id))
+            # db.session.add(element)
+            # db.session.commit()
+
+        print("Populated Monster table")
+
+        print("Monsters dict contains " + str(len(self.monsters)) + " elements.")
+        print("Monster TABLE contains " + str(len(Monster.query.all())) + " rows.")
+
+        print("Populated CommonMonster table")
+
+        print("CommonMonsters dict contains " + str(len(self.common_monsters)) + " elements.")
+        print("CommonMonster TABLE contains " + str(len(CommonMonster.query.all())) + " rows.")
+
+        print("Types dict contains " + str(len(self.types)) + " elements.")
+        print("Type TABLE contains " + str(len(Type.query.all())) + " rows.")
+
+        print("Elements dict contains " + str(len(self.elements)) + " elements.")
+        print("Element TABLE contains " + str(len(Element.query.all())) + " rows.")
+
+        print("Stopping Spider")
+
     def parse_monster(self, response):
         m_id = int(response.url.split("n=")[1])
 
@@ -29,17 +93,17 @@ class MonsterScraper(CrawlSpider):
 
         m_name = soup.find("span", text="Name").find_next("td", {"class" : "data"}).string.encode("utf-8").strip()
 
-        m_types = [type_tag.string.encode("utf-8") \
-                   for type_tag in soup.find("td", text="Type:").find_next("td").find_all("a")]
+        m_types = [(type_tag.string.encode("utf-8"), int(type_tag["href"].split("t" + str(i + 1) + "=")[1].split("&")[0])) \
+                   for (i, type_tag) in enumerate(soup.find("td", text="Type:").find_next("td").find_all("a"))]
 
         while len(m_types) < 3:
-            m_types.append(None)
+            m_types.append((None, None))
 
-        m_elements = [element_tag.string.encode("utf-8") \
-                      for element_tag in soup.find("td", text="Element:").find_next("td").find_all("a")]
+        m_elements = [(element_tag.string.encode("utf-8"), int(element_tag["href"].split("e" + str(i + 1) + "=")[1].split("&")[0])) \
+                      for (i, element_tag) in enumerate(soup.find("td", text="Element:").find_next("td").find_all("a"))]
 
         while len(m_elements) < 2:
-            m_elements.append(None)
+            m_elements.append((None, None))
 
         m_rarity = int(soup.find("td", text="Rarity:").find_next("a").string.split()[0])
 
@@ -78,11 +142,11 @@ class MonsterScraper(CrawlSpider):
         
         m_active_skill = soup.find("a", href=re.compile("^skill.asp\?s="))
         m_active_skill = int(m_active_skill["href"].split("s=")[1]) \
-                         if m_active_skill != None else -1
+                         if m_active_skill != None else None
         
         m_leader_skill = soup.find("a", href=re.compile("^leaderskill.asp\?s="))
         m_leader_skill = int(m_leader_skill["href"].split("s=")[1]) \
-                         if m_leader_skill != None else -1
+                         if m_leader_skill != None else None
 
         m_awoken_skills = soup.find("td", {"class" : "awoken1"})
         m_awoken_skills = [int(awoken_skill_tag["href"].split("s=")[1]) \
@@ -149,16 +213,77 @@ class MonsterScraper(CrawlSpider):
                                        for evo_material_tag in initial_evolve_tag.find_next("td", {"class" : "finalawokenevolve nowrap"}).find_all("a")]
                     m_evolves_to.append((evo_to, evo_to_materials))
 
-        # If Evo Material or Enhance Material don't check for Exp necessary to max
-        print(Monster(id=m_id, name=m_name, primary_type=m_types[0], \
-                      secondary_type=m_types[1], ternary_type=m_types[2], primary_element=m_elements[0], \
-                      secondary_element=m_elements[1], rarity=m_rarity, team_cost=m_cost, \
-                      monster_points=m_points, evolves_to=m_evolves_to, min_lvl=m_min_lvl, \
-                      max_lvl=m_max_lvl, min_hp=m_min_hp, max_hp=m_max_hp, \
-                      min_atk=m_min_atk, max_atk=m_max_atk, min_rcv=m_min_rcv, \
-                      max_rcv=m_max_rcv, min_sell_value=m_min_sell, max_sell_value=m_max_sell, \
-                      min_exp_feed=m_min_feed_exp, max_exp_feed=m_max_feed_exp, exp_needed=m_exp_curve, \
-                      active_skill=m_active_skill, leader_skill=m_leader_skill, awoken_skills=m_awoken_skills, \
-                      obtainable_in_dungeons=m_obtained_in_dungeons, evolves_from=m_evolves_from, series_name=m_series_name))
+        with db.session.no_autoflush:
+            assert MonsterSeries.query.filter_by(name=m_series_name).first() != None
 
+            if m_active_skill != None:
+                assert ActiveSkill.query.filter_by(id=m_active_skill).first() != None
+
+            if m_leader_skill != None:
+                assert LeaderSkill.query.filter_by(id=m_leader_skill).first() != None
+
+            awoken_skills = [AwokenSkill.query.filter_by(id=awoken_skill_id).first() for awoken_skill_id in m_awoken_skills]
+
+            # If Evo Material or Enhance Material don't check for Exp necessary to max
+            monster = Monster(id=m_id, name=m_name, rarity=m_rarity, team_cost=m_cost, \
+                              sells_for_monster_points=m_points, min_lvl=m_min_lvl, \
+                              max_lvl=m_max_lvl, min_hp=m_min_hp, max_hp=m_max_hp, \
+                              min_atk=m_min_atk, max_atk=m_max_atk, min_rcv=m_min_rcv, \
+                              max_rcv=m_max_rcv, min_sell_value=m_min_sell, max_sell_value=m_max_sell, \
+                              min_exp_feed=m_min_feed_exp, max_exp_feed=m_max_feed_exp, exp_needed=m_exp_curve)
+            monster.monster_series = MonsterSeries.query.filter_by(name=m_series_name).first()
+            monster.active_skill = ActiveSkill.query.filter_by(id=m_active_skill).first()
+            monster.leader_skill = LeaderSkill.query.filter_by(id=m_leader_skill).first()
+            monster.awoken_skills = awoken_skills
+
+            primary_type = Type(id=m_types[0][1], name=m_types[0][0])
+            secondary_type = Type(id=m_types[1][1], name=m_types[1][0]) if m_types[1][1] != None else None
+            ternary_type = Type(id=m_types[2][1], name=m_types[2][0]) if m_types[2][1] != None else None
+
+            primary_element = Element(id=m_elements[0][1], name=m_elements[0][0])
+            secondary_element = Element(id=m_elements[1][1], name=m_elements[1][0]) if m_elements[1][1] != None else None
+
+            if primary_type != None and Type.query.filter_by(id=primary_type.id).first() != None:
+                # print("P Type ID: " + str(primary_type.id))
+                primary_type = Type.query.filter_by(id=primary_type.id).first()
+
+            if secondary_type != None and Type.query.filter_by(id=secondary_type.id).first() != None:
+                # print("S Type ID: " + str(secondary_type.id))
+                secondary_type = Type.query.filter_by(id=secondary_type.id).first()
+
+            if ternary_type != None and Type.query.filter_by(id=ternary_type.id).first() != None:
+                # print("T Type ID: " + str(ternary_type.id))
+                ternary_type = Type.query.filter_by(id=ternary_type.id).first()
+
+            if primary_element != None and Element.query.filter_by(id=primary_element.id).first() != None:
+                # print("P Element ID: " + str(primary_element.id))
+                primary_element = Element.query.filter_by(id=primary_element.id).first()
+
+            if secondary_element != None and Element.query.filter_by(id=secondary_element.id).first() != None:
+                # print("S Element ID: " + str(secondary_element.id))
+                secondary_element = Element.query.filter_by(id=secondary_element.id).first()
+
+            common_monster = CommonMonster(id=m_id, name=m_name, img="/api/monster/img/" + str(m_id) + ".png", thmb="/api/monster/thmb/" + str(m_id) + ".png")
+            common_monster.primary_type = primary_type
+            common_monster.secondary_type = secondary_type
+            common_monster.ternary_type = ternary_type
+            common_monster.primary_element = primary_element
+            common_monster.secondary_element = secondary_element
+            common_monster.monster = monster
+
+            self.types[m_types[0][1]] = primary_type
+            self.types[m_types[1][1]] = secondary_type
+            self.types[m_types[2][1]] = ternary_type
+            self.elements[m_elements[0][1]] = primary_element
+            self.elements[m_elements[1][1]] = secondary_element
+            self.common_monsters[m_id] = common_monster
+            self.monsters[m_id] = monster
+
+            # print("Monster ID: " + str(monster.id))
+            db.session.add(monster)
+            db.session.commit()
+
+            # print("Common Monster ID: " + str(common_monster.id))
+            db.session.add(common_monster)
+            db.session.commit()
 

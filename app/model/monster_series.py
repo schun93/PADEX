@@ -1,12 +1,16 @@
-class MonsterSeries:
+from app.model.base import db
 
-    def __init__(self, id, name, monsters_in_series=frozenset()):
+class MonsterSeries(db.Model):
+
+    __tablename__ = "monster_series"
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    name = db.Column(db.String(80), nullable=False, unique=True)
+
+    def __init__(self, id, name):
         self.id = id
         self.name = name
-        self.monsters_in_series = monsters_in_series
 
     def __str__(self):
-        return "MonsterSeries\nID: " + str(self.id) + \
-               "\nName: " + self.name + \
-               "\nMonsters in series: " + str(self.monsters_in_series) + \
-               "\n"
+        return "\nID: " + str(self.id) + \
+               "\nName: " + self.name

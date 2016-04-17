@@ -1,18 +1,23 @@
-class AwokenSkill:
+from app.model.base import db
 
-    def __init__(self, id, name, description, url, owned_by_monsters):
+class AwokenSkill(db.Model):
+
+    __tablename__ = "awoken_skill"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.String(256), nullable=False)
+    img = db.Column(db.String(128), nullable=False)
+
+    def __init__(self, id, name, description, img):
         self.id = id
         self.name = name
         self.description = description
-        self.url = url
-
-        # List of monster_id foreign keys
-        self.owned_by_monsters = owned_by_monsters
+        self.img = img
 
     def __str__(self):
-        return  "ID: " + str(self.id) + \
+        return  "\nID: " + str(self.id) + \
                 "\nName: " + self.name + \
                 "\nEffect: " + self.description + \
-                "\nImg: " + self.url + \
-                "\nMonsters: " + str(self.owned_by_monsters) + \
-                "\n"
+                "\nImg: " + self.img + \
+                "\nMonsters: " + str(self.owned_by_monsters)

@@ -8,10 +8,16 @@ import bs4
 import requests
 import re
 
+from scrapy import signals
+from scrapy.xlib.pydispatch import dispatcher
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
+
 from bs4 import BeautifulSoup
-from app.model.dungeon import Dungeon
+
+from app.model.base import db
+from app.model.monster import CommonMonster
+from app.model.dungeon import Dungeon, EnemySkill, EnemyMove, EnemyMonster
 
 def represents_int(s):   
     try: 
@@ -36,11 +42,23 @@ class DungeonScraper(CrawlSpider):
                            callback="parse_dungeon", follow=True),
     )
 
+    def __init__(self, *a, **kw):
+        super(DungeonScraper, self).__init__(*a, **kw)
+
+        print("Starting spider")
+        db.metadata.drop_all(db.engine, tables=[EnemySkill.__table__, EnemyMove.__table__, Dungeon.__table__, EnemyMonster.__table__])
+        db.metadata.create_all(db.engine, tables=[EnemyMonster.__table__, Dungeon.__table__, EnemyMove.__table__, EnemySkill.__table__])
+
+        dispatcher.connect(self.spider_closed, signals.spider_closed)
+
+    def spider_closed(self, spider):
+        print("Stopping spider")
+
     def obtain_encounter_quantity(self, tag):
         try:
             return int(tag.find_next("td", {"class" : "quantity"}).contents[0].split("x ")[1].encode("utf-8"))
         except:
-            return -1
+            return 1
 
     def obtain_floor_number(self, tag):
         return int(tag.find_next("td").string.encode("utf-8"))
@@ -57,13 +75,16 @@ class DungeonScraper(CrawlSpider):
         return tuple(types)
 
     def obtain_turn_number(self, tag):
-        return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.string.encode("utf-8"))
+        try:
+            return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.string.encode("utf-8"))
+        except:
+            return 1
 
     def obtain_attack_value(self, tag):
         try:
             return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.string.encode("utf-8"))
         except:
-            return "Skill"
+            return None
 
     def obtain_defense_value(self, tag):
         try:
@@ -72,7 +93,10 @@ class DungeonScraper(CrawlSpider):
             return 0
 
     def obtain_hp_value(self, tag):
-        return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.next_sibling.next_sibling.find_next("span").string.encode("utf-8"))
+        try:
+            return int(tag.find_next("td", {"class" : "quantity"}).next_sibling.next_sibling.next_sibling.next_sibling.find_next("span").string.encode("utf-8"))
+        except:
+            return None
 
     def obtain_move_info(self, tag, result):
         move_tag = tag.find("td", {"class" : "mmemodetail"})
@@ -93,25 +117,27 @@ class DungeonScraper(CrawlSpider):
             move_info = tag.find_all("div", id=re.compile("\d-info"))[0].text.encode("utf-8") \
                         if move_tag == None else move_tag.find("span", {"class" : "skillexpand"}).find_all("div", id=re.compile("\d-info"))[0].text.encode("utf-8")
 
-            if "% HP, " in move_info and move_info.index("% HP, ") < move_info.index("% Chance"):
-                move_chance = next(iter([token for token in move_info.split("% HP, ")[1].split("% Chance") if represents_int(token)]))
-                move_hp_threshold = move_info.split("% HP")[0] \
-                                    if "% HP" in move_info else None
-            else:
-                move_chance = move_info.split("% Chance")[0] if "% Chance" in move_info else None
-                move_hp_threshold = None
-
             move_des_tag = tag.find_all("div", id=re.compile("\d-info"))[0] \
                            if move_tag == None else move_tag.find("span", {"class" : "skillexpand"}).find_all("div", id=re.compile("\d-info"))[0]
 
+            move_id = int(move_des_tag.find("a", href=re.compile("^enemyskill.asp"))["href"].split("s=")[1])
+
             if len(move_des_tag.contents) > 1:
                 move_description = move_des_tag.find("a", href=re.compile("^enemyskill.asp")).previous_sibling.string.encode("utf-8")
+                move_condition = move_info.split(move_description)[0]
+
+                try:
+                    move_description = move_description.split("Pre-emptive Strike. ")[1]
+                except:
+                    move_description = move_description
+
             else:
+                move_condition = None
                 move_description = None
 
         except Exception as e:
-            move_chance = None
-            move_hp_threshold = None
+            return tuple([])
+
 
         skills_left = tag.find_all("span", {"class" : "skillexpand"}) \
                       if move_tag == None else move_tag.find_all("span", {"class" : "skillexpand"})
@@ -121,14 +147,14 @@ class DungeonScraper(CrawlSpider):
             if move_tag != None:
                 skills_left.pop(0)
 
-            result.append(tuple([move_name, move_attack, move_chance, move_hp_threshold, move_description]))
+            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description]))
             return self.obtain_move_info(skills_left[0], result)
         else:
-            result.append(tuple([move_name, move_attack, move_chance, move_hp_threshold, move_description]))
+            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description]))
             return tuple(result)
 
     def parse_dungeon(self, response):
-        d_id = response.url.split("m=")[1]
+        d_id = int(response.url.split("m=")[1])
 
         soup = BeautifulSoup(response.body, "lxml")
 
@@ -158,4 +184,27 @@ class DungeonScraper(CrawlSpider):
                                         for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
                                         if represents_int(monster_tag.find_next("td").string)}
 
-        print(Dungeon(id=d_id, name=d_name, random_encounters=d_random_encounter_monsters, major_encounters=d_major_encounter_monsters))
+        dungeon = Dungeon(id=d_id, name=d_name)
+        db.session.add(dungeon)
+        db.session.commit()
+
+        for monster_id, monster_type, turn, atk, defn, hp, moves_info in d_random_encounter_monsters:
+            enemy_monster = EnemyMonster(hp=hp, atk=atk, defn=defn, turn=turn)
+            enemy_monster.common_monster = CommonMonster.query.filter_by(id=monster_id).first()
+            enemy_monster.random_encounter_in_dungeon = dungeon
+
+            db.session.add(enemy_monster)
+            db.session.commit()
+
+            for move_id, move_name, move_attack, move_condition, move_description in moves_info:
+                if EnemySkill.query.filter_by(id=move_id).first() == None:
+                    db.session.add(EnemySkill(id=move_id, name=move_name, effect=move_description))
+                    db.session.commit()
+
+                enemy_skill = EnemySkill.query.filter_by(id=move_id).first()
+                enemy_move = EnemyMove(atk_condition=move_condition, atk=move_attack)
+                enemy_move.enemy_skill = enemy_skill
+                enemy_move.enemy_monster = enemy_monster
+
+                db.session.add(enemy_move)
+                db.session.commit()

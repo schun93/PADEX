@@ -1,83 +1,109 @@
-class DungeonMonsterMove:
-    def __init__(self, name, atk, chance, hp_threshold, description):
+from app.model.base import db
+
+class EnemySkill(db.Model):
+
+    __tablename__ = "enemy_skill"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+    effect = db.Column(db.String(256), nullable=False)
+
+    def __init__(self, id, name, effect):
+        self.id = id
         self.name = name
-        self.atk = atk
-        self.chance = chance
-        self.hp_threshold = hp_threshold
-        self.description = description
+        self.effect = effect
 
     def __str__(self):
-        return  "Move Information:" + \
-                "\nName: " + str(self.name) + \
-                "\nATK: " + str(self.atk) + \
-                "\nChance: " + str(self.chance) + \
-                "\nHP Threshold: " + str(self.hp_threshold) + \
-                "\nDescription: " + str(self.description) + \
-                "\n"
+        return "\nS_ID: " + str(self.id) + \
+               "\nName: " + str(self.name) + \
+               "\nEffect: " + str(self.effect) + \
+               "\nPart of Moves: " + str(self.part_of_moves)
 
-class DungeonMonster:
-    def __init__(self, id, primary_type, secondary_type, ternary_type, hp, atk, defn, turn, moves_info, floor=-1, quantity=-1):
-        self.id = id
-        self.primary_type = primary_type
-        self.secondary_type = secondary_type
-        self.ternary_type = ternary_type
+class EnemyMove(db.Model):
+
+    __tablename__ = "enemy_move"
+
+    id = db.Column(db.Integer, primary_key=True)
+    atk = db.Column(db.Integer)
+    atk_condition = db.Column(db.String(128))
+
+    # enemy_monster_id = db.Column(db.Integer, db.ForeignKey("enemy_monster.id"), nullable=False)
+    enemy_monster_id = db.Column(db.Integer, db.ForeignKey("enemy_monster.id"))
+    enemy_monster = db.relationship("EnemyMonster", backref="moves", foreign_keys="EnemyMove.enemy_monster_id")
+
+    enemy_skill_id = db.Column(db.Integer, db.ForeignKey("enemy_skill.id"), nullable=False)
+    enemy_skill = db.relationship("EnemySkill", backref="part_of_moves", foreign_keys="EnemyMove.enemy_skill_id")
+
+    def __init__(self, atk_condition, atk=None):
+        self.atk = atk
+        self.atk_condition = atk_condition
+
+    def __str__(self):
+        return  "\nMove Information:" + \
+                "\nM_ID: " + str(self.id) + \
+                "\nATK: " + str(self.atk) + \
+                "\nATK Condition: " + str(self.atk_condition) + \
+                "\nFK.S_ID: " + str(self.enemy_skill_id) + \
+                "\nEnemy Skill: " + str(self.enemy_skill)
+
+class EnemyMonster(db.Model):
+
+    __tablename__ = "enemy_monster"
+
+    id = db.Column(db.Integer, primary_key=True)
+    hp = db.Column(db.Integer)
+    atk = db.Column(db.Integer)
+    defn = db.Column(db.Integer, nullable=False)
+    turn = db.Column(db.Integer)
+    floor = db.Column(db.Integer)
+    quantity = db.Column(db.Integer)
+
+    common_monster_id = db.Column(db.Integer, db.ForeignKey("common_monster.id"), nullable=False)
+    common_monster = db.relationship("CommonMonster", backref="enemy_monsters", foreign_keys="EnemyMonster.common_monster_id")
+
+    random_encounter_in_dungeon_id = db.Column(db.Integer, db.ForeignKey("dungeon.id"))
+    random_encounter_in_dungeon = db.relationship("Dungeon", backref="random_encounters", foreign_keys="EnemyMonster.random_encounter_in_dungeon_id")
+
+    major_encounter_in_dungeon_id = db.Column(db.Integer, db.ForeignKey("dungeon.id"))
+    major_encounter_in_dungeon = db.relationship("Dungeon", backref="major_encounters", foreign_keys="EnemyMonster.major_encounter_in_dungeon_id")
+
+    def __init__(self, hp, atk, defn, turn, floor=None, quantity=None):
         self.hp = hp
         self.atk = atk
         self.defn = defn
         self.floor = floor
         self.quantity = quantity
         self.turn = turn
-        self.moves_info = [DungeonMonsterMove(name=move_info[0], \
-                                              atk=move_info[1], \
-                                              chance=move_info[2], \
-                                              hp_threshold=move_info[3], \
-                                              description=move_info[4]) for move_info in moves_info]
 
     def __str__(self):
         moves_string = ""
 
-        for move_info in self.moves_info:
+        for move_info in self.moves:
             moves_string += str(move_info) + "\n"
 
-        return  "Dungeon Monster ID: " + str(self.id) + \
-                "\nPrimary Type: " + str(self.primary_type) + \
-                "\nSecondary Type: " + str(self.secondary_type) + \
-                "\nTernary Type: " + str(self.ternary_type) + \
+        return  "\nDungeon Monster ID: " + str(self.id) + \
                 "\nHP: " + str(self.hp) + \
                 "\nATK: " + str(self.atk) + \
                 "\nDEF: " + str(self.defn) + \
                 "\nFloor: " + str(self.floor) + \
                 "\nQuantity: " + str(self.quantity) + \
                 "\nTurn: " + str(self.turn) + \
-                "\nMoves Info: " + moves_string + \
-                "\n"
+                "\nCommon Monster: " + str(self.common_monster) + \
+                "\nMoves Info: " + moves_string
 
-class Dungeon:
+    def encounter_in_dungeon(self):
+        return self.random_encounter_in_dungeon if self.random_encounter_in_dungeon_id != None else self.major_encounter_in_dungeon
 
-    def __init__(self, id, name, random_encounters, major_encounters):
+class Dungeon(db.Model):
+
+    __tablename__ = "dungeon"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
+
+    def __init__(self, id, name):
         self.id = id
         self.name = name
-        self.random_encounters = [DungeonMonster(id=encounter[0], \
-                                                 primary_type=encounter[1][0], \
-                                                 secondary_type=encounter[1][1], \
-                                                 ternary_type=encounter[1][2], \
-                                                 hp=encounter[5], \
-                                                 atk=encounter[3], \
-                                                 defn=encounter[4], \
-                                                 turn=encounter[2], \
-                                                 moves_info=encounter[6]) \
-                                                 for encounter in random_encounters]
-        self.major_encounters = [DungeonMonster(id=encounter[1], \
-                                                primary_type=encounter[3][0], \
-                                                secondary_type=encounter[3][1], \
-                                                ternary_type=encounter[3][2], \
-                                                hp=encounter[7], \
-                                                atk=encounter[5], \
-                                                defn=encounter[6], \
-                                                floor=encounter[0], \
-                                                quantity=encounter[2], \
-                                                turn=encounter[4], \
-                                                moves_info=encounter[8]) for encounter in major_encounters]
 
     def __str__(self):
         random_encounters_string = ""
@@ -90,8 +116,8 @@ class Dungeon:
         for dungeon_monster in self.major_encounters:
             major_encounters_string += str(dungeon_monster) + "\n"
 
-        return  "Dungeon ID: " + str(self.id) + \
+        return  "\n\nDungeon ID: " + str(self.id) + \
                 "\nName: " + str(self.name) + \
-                "\nRandom Encounters:\n" + random_encounters_string + \
-                "\nMajor Encounters:\n" + major_encounters_string + \
-                "\n"
+                "\nRandom Encounters:" + random_encounters_string + \
+                "\n\nMajor Encounters:" + major_encounters_string
+
