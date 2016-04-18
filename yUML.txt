@@ -4,7 +4,7 @@
 
 [ Dungeon | id:PK.Int; name:String; random_encounters:list(FK.EnemyMonster.id); major_encounters:list(FK.EnemyMonster.id) ]
 
-[ EnemyMonster | id:PK.Int; hp:Int; atk:Int; defn:Int; turn:Int; floor:Int; quantity:Int; common_monster:FK.CommonMonster.id; dungeon:FK.Dungeon.id; moves:list(FK.EnemyMove.id) ]
+[ EnemyMonster | id:PK.Int; hp:Int; atk:Int; defn:Int; turn:Int; floor:Int; quantity:Int; common_monster:FK.CommonMonster.id; dungeon:FK.Dungeon.id; moves:list(FK.EnemyMove.id), drop:list(FK.Drop.id) ]
 
 [ EnemyMove | id:PK.Int; dungeon_monster_id:FK.EnemyMonster.id; atk:Int; attack_condition:String; skill:FK.EnemySkill.id ]
 
@@ -12,7 +12,7 @@
 
 [ EnemySkill-Monster-N | id:PK.Int; enemy_skill_id:FK.EnemySkill.id; monster_id:FK.Monster.id ]
 
-[ Type | id:PK.Int; name:String; primary_type_owned_by_monsters:list(FK.CommonMonster.id); secondary_type_owned_by_monsters:list(FK.CommonMonster.id); ternary_type_owned_by_monsters:list(FK.CommonMonster.id); primary_element_owned_by_monsters:list(FK.CommonMonster.id); secondary_element_owned_by_monsters:list(FK.CommonMonster.id) ]
+[ Type | id:PK.Int; name:String; primary_type_owned_by_monsters:list(FK.CommonMonster.id); secondary_type_owned_by_monsters:list(FK.CommonMonster.id); ternary_type_owned_by_monsters:list(FK.CommonMonster.id) ]
 
 [ Element | id:PK.Int; name:String; primary_element_owned_by_monsters:list(FK.CommonMonster.id); secondary_element_owned_by_monsters:list(FK.CommonMonster.id) ]
 
@@ -32,12 +32,14 @@
 
 [ required_materials_evolution_n | id:PK.Int; evolution_id:FK.Evolution.id; monster_id:FK.Monster.id ]
 
+[ Drop | id:PK.Int; enemy_monster_id:FK.EnemyMonster.id; common_monster_id:FK.CommonMonster.id; chance:Int]
 
 // Dungeon UML
 
 [Dungeon]1-*[EnemyMonster]
 [EnemyMonster]1-*[EnemyMove]
 [EnemyMonster]*-1[CommonMonster]
+[EnemyMonster]1-*[Drop]
 [EnemySkill]1-*[EnemySkill-Monster-N]
 [EnemyMove]*-1[EnemySkill]
 
@@ -49,6 +51,7 @@
 [Monster]1-*[EnemySkill-Monster-N]
 [Monster]1-*[AwokenSkill-Monster-N]
 [Monster]1-*[required_materials_evolution_n]
+[Monster]1-*[Drop]
 
 
 // Evolution UML

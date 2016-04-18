@@ -1,5 +1,7 @@
 from app.model.base import db
 
+from collections import OrderedDict
+
 class LeaderSkill(db.Model):
 
     __tablename__ = "leader_skill"
@@ -20,3 +22,15 @@ class LeaderSkill(db.Model):
                "\nName: " + self.name + \
                "\nEffect: " + self.effect + \
                "\nOriginal Effect: " + self.original_effect
+
+    def dictify(self, thinify=True):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["name"] = self.name
+        dictified["effect"] = self.effect
+        dictified["original_effect"] = self.original_effect
+
+        if not thinify:
+            dictified["owned_by_monsters"] = [monster.id for monster in self.owned_by_monsters]
+
+        return dictified

@@ -1,3 +1,13 @@
+from app.model.base import db
+from app.model.type import Type
+from app.model.element import Element
+from app.model.awoken_skill import AwokenSkill
+from app.model.active_skill import ActiveSkill
+from app.model.leader_skill import LeaderSkill
+from app.model.monster_series import MonsterSeries
+from app.model.monster import Monster, CommonMonster, Evolution
+from app.model.dungeon import EnemySkill, EnemyMove, EnemyMonster, Dungeon
+
 # Statement for enabling the development environment
 DEBUG = True
 

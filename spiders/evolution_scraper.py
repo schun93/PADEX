@@ -15,7 +15,13 @@ from scrapy.linkextractors import LinkExtractor
 from bs4 import BeautifulSoup
 
 from app.model.base import db
-from app.model.monster import Monster, Evolution, required_materials_evolution_n
+from app.model.monster_series import MonsterSeries
+from app.model.active_skill import ActiveSkill
+from app.model.leader_skill import LeaderSkill
+from app.model.awoken_skill import AwokenSkill
+from app.model.type import Type
+from app.model.element import Element
+from app.model.monster import Monster, CommonMonster, Evolution, required_materials_evolution_n
 
 class EvolutionScraper(CrawlSpider):
     name = "monster_spider"

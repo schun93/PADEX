@@ -36,7 +36,12 @@ class MonsterScraper(CrawlSpider):
         super(MonsterScraper, self).__init__(*a, **kw)
 
         print("Starting spider")
-        db.metadata.drop_all(db.engine, tables=[Type.__table__, Element.__table__, Monster.__table__, CommonMonster.__table__, awoken_skill_monster_n])
+        db.metadata.drop_all(db.engine, tables=[awoken_skill_monster_n])
+        db.metadata.drop_all(db.engine, tables=[CommonMonster.__table__])
+        db.metadata.drop_all(db.engine, tables=[Monster.__table__])
+        db.metadata.drop_all(db.engine, tables=[Element.__table__])
+        db.metadata.drop_all(db.engine, tables=[Type.__table__])
+        # db.metadata.drop_all(db.engine, tables=[Type.__table__, Element.__table__, Monster.__table__, CommonMonster.__table__, awoken_skill_monster_n])
         db.metadata.create_all(db.engine, tables=[awoken_skill_monster_n, Monster.__table__, CommonMonster.__table__, Type.__table__, Element.__table__])
 
         self.monsters = {}
@@ -118,7 +123,7 @@ class MonsterScraper(CrawlSpider):
 
         m_min_hp = int(soup.find("td", {"class" : "stathp"}).find_next("td").string)
         
-        m_max_hp = int(soup.find("td", {"class" : "statlevel"}).find_next("td").find_next("td").string)
+        m_max_hp = int(soup.find("td", {"class" : "stathp"}).find_next("td").find_next("td").string)
         
         m_min_atk = int(soup.find("td", {"class" : "statatk"}).find_next("td").string)
         

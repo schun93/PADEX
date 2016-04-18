@@ -6,7 +6,7 @@ class EnemySkill(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    effect = db.Column(db.String(256), nullable=False)
+    effect = db.Column(db.String(256))
 
     def __init__(self, id, name, effect):
         self.id = id
@@ -121,3 +121,17 @@ class Dungeon(db.Model):
                 "\nRandom Encounters:" + random_encounters_string + \
                 "\n\nMajor Encounters:" + major_encounters_string
 
+class Drop(db.Model):
+    __tablename__ = "monster_drop"
+
+    id = db.Column(db.Integer, primary_key=True)
+    chance = db.Column(db.Integer)
+
+    enemy_monster_id = db.Column(db.Integer, db.ForeignKey("enemy_monster.id"))
+    enemy_monster = db.relationship("EnemyMonster", backref="drops", foreign_keys="Drop.enemy_monster_id")
+
+    monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"))
+    monster = db.relationship("Monster", backref="dropped_by_enemy_monster_id", foreign_keys="Drop.monster_id")
+
+    def __init__(self, chance=None):
+        self.chance = chance

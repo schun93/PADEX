@@ -1,5 +1,7 @@
 from app.model.base import db
 
+from collections import OrderedDict
+
 class ActiveSkill(db.Model):
 
     __tablename__ = "active_skill"
@@ -29,3 +31,18 @@ class ActiveSkill(db.Model):
                "\nMax CD: " + str(self.max_cd) + \
                "\nMin CD: " + str(self.min_cd) + \
                "\nMax Lvl: " + str(self.max_lvl)
+
+    def dictify(self, thinify=True):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["name"] = self.name
+        dictified["effect"] = self.original_effect
+        dictified["max_cd"] = self.max_cd
+        dictified["min_cd"] = self.min_cd
+        dictified["max_lvl"] = self.max_lvl
+        
+        if not thinify:
+            dictified["owned_by_monsters"] = [monster.id for monster in self.owned_by_monsters]
+
+        return dictified
+

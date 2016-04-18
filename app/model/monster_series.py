@@ -1,5 +1,7 @@
 from app.model.base import db
 
+from collections import OrderedDict
+
 class MonsterSeries(db.Model):
 
     __tablename__ = "monster_series"
@@ -14,3 +16,13 @@ class MonsterSeries(db.Model):
     def __str__(self):
         return "\nID: " + str(self.id) + \
                "\nName: " + self.name
+
+    def dictify(self, thinify=True):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["name"] = self.name
+
+        if not thinify:
+            dictified["monsters_in_series"] = [monster.id for monster in self.monsters_in_series]
+
+        return dictified
