@@ -1,6 +1,9 @@
 from app.model.base import db
+from app.model.dungeon import Dungeon, Drop, EnemyMonster
 
 from sqlalchemy.orm import backref
+
+from collections import OrderedDict
 
 class CommonMonster(db.Model):
 
@@ -132,6 +135,47 @@ class Monster(db.Model):
                 "\nAwoken Skills: " + str(self.awoken_skills) + \
                 "\nMonster Series: " + str(self.monster_series)
 
+    def dictify(self, thinify=True):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["name"] = self.name
+        dictified["rarity"] = self.rarity
+        dictified["primary_type"] = self.common_monster.primary_type_id
+        dictified["secondary_type"] = self.common_monster.secondary_type_id
+        dictified["ternary_type"] = self.common_monster.ternary_type_id
+        dictified["primary_element"] = self.common_monster.primary_element_id
+        dictified["secondary_element"] = self.common_monster.secondary_element_id
+        dictified["team_cost"] = self.team_cost
+        dictified["sells_for_monster_points"] = self.sells_for_monster_points
+        dictified["min_lvl"] = self.min_lvl
+        dictified["max_lvl"] = self.max_lvl
+        dictified["min_hp"] = self.min_hp
+        dictified["max_hp"] = self.max_hp
+        dictified["min_atk"] = self.min_atk
+        dictified["max_atk"] = self.max_atk
+        dictified["min_rcv"] = self.min_rcv
+        dictified["max_rcv"] = self.max_rcv
+        dictified["min_sell_value"] = self.min_sell_value
+        dictified["max_sell_value"] = self.max_sell_value
+        dictified["min_exp_feed"] = self.min_exp_feed
+        dictified["max_exp_feed"] = self.max_exp_feed
+        dictified["exp_needed"] = self.exp_needed
+        # Iterate through all the evolution chains the current monster is a part of and add the monsters it can evolve to
+        dictified["evolves_to"] = [evolution.to_monster_id for evolution in self.current_evolution if evolution.to_monster_id != None]
+        # If the current monster doesn't evolve from any monster use None, otherwise find the monster it evolves from
+        dictified["evolves_from"] = self.evolves_to.current_monster_id if self.evolves_to != None else None
+        dictified["evolution_chain"] = [evolution.id for evolution in self.current_evolution]
+        dictified["monster_series"] = self.monster_series.id
+        dictified["active_skill"] = self.active_skill_id
+        dictified["leader_skill"] = self.leader_skill_id
+        dictified["awoken_skills"] = [awoken_skill_monster_link.awoken_skill_id for awoken_skill_monster_link in db.session.query(awoken_skill_monster_n).filter_by(monster_id=self.id).all()]
+        dictified["dropped_in_dungeons"] = [drop.enemy_monster.encounter_in_dungeon().id for drop in self.drops]
+        dictified["img"] = "Not available"
+        dictified["thmb"] = "Not available"
+
+        return dictified
+
+
 required_materials_evolution_n = db.Table("required_materials_evolution_n", 
                                         db.Column("id", db.Integer, primary_key=True),
                                         db.Column("evolution_id", db.ForeignKey("evolution.id")),
@@ -144,11 +188,14 @@ class Evolution(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    from_monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"), nullable=False)
-    from_monster = db.relationship("Monster", backref=backref("evolves_from", uselist=False), foreign_keys="Evolution.from_monster_id")
+    from_monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"))
+    from_monster = db.relationship("Monster", backref="evolves_from", foreign_keys="Evolution.from_monster_id")
 
-    to_monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"), nullable=False)
-    to_monster = db.relationship("Monster", backref="evolves_to", foreign_keys="Evolution.to_monster_id")
+    current_monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"), nullable=False)
+    current_monster = db.relationship("Monster", backref="current_evolution", foreign_keys="Evolution.current_monster_id")
+
+    to_monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"))
+    to_monster = db.relationship("Monster", backref=backref("evolves_to", uselist=False), foreign_keys="Evolution.to_monster_id")
 
     required_materials = db.relationship("Monster", secondary=required_materials_evolution_n, backref="material_for_evolution")
 
@@ -157,3 +204,12 @@ class Evolution(db.Model):
 
     def __str__(self):
         pass
+
+    def dictify(self):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["from_monster"] = self.from_monster_id
+        dictified["current_monster"] = self.current_monster_id
+        dictified["to_monster"] = self.to_monster_id
+
+        return dictified

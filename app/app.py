@@ -8,6 +8,8 @@ from app.model.awoken_skill import AwokenSkill
 from app.model.leader_skill import LeaderSkill
 from app.model.monster_series import MonsterSeries
 from app.model.type import Type
+from app.model.element import Element
+from app.model.monster import Evolution, Monster
 
 # Import flask and template operators
 from flask import Flask
@@ -63,6 +65,11 @@ def api_thin_monster_series(monster_series_id):
 def api_thin_type(type_id):
     return Type.query.filter_by(id=type_id).first().dictify()
 
+@app.route("/api/v1/element/thin/<element_id>")
+@handle_none_query
+def api_thin_element(element_id):
+    return Element.query.filter_by(id=element_id).first().dictify()
+
 # API Routes
 
 @app.route("/api/v1/active_skill/<active_skill_id>")
@@ -89,6 +96,21 @@ def api_monster_series(monster_series_id):
 @handle_none_query
 def api_type(type_id):
     return Type.query.filter_by(id=type_id).first().dictify(thinify=False)
+
+@app.route("/api/v1/element/<element_id>")
+@handle_none_query
+def api_element(element_id):
+    return Element.query.filter_by(id=element_id).first().dictify(thinify=False)
+
+@app.route("/api/v1/evolution/<evolution_id>")
+@handle_none_query
+def api_evolution(evolution_id):
+    return Evolution.query.filter_by(id=evolution_id).first().dictify()
+
+@app.route("/api/v1/monster/<monster_id>")
+@handle_none_query
+def api_monster(monster_id):
+    return Monster.query.filter_by(id=monster_id).first().dictify(thinify=False)
 
 # Sample HTTP error handling
 @app.errorhandler(404)

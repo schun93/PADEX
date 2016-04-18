@@ -837,7 +837,8 @@ PADAPI is a simple API allowing for the retrieval of all information related to 
                     "max_exp_feed": 207900,
                     "exp_needed": 5000000,
                     "evolves_to": [],
-                    "evolves_from": 131,
+                    "evolves_from": 2440,
+                    "evolution_chain": 301,
                     "monster_series": 54,
                     "active_skill": 1567,
                     "leader_skill": 2169,
@@ -877,9 +878,10 @@ PADAPI is a simple API allowing for the retrieval of all information related to 
                     "max_exp_feed": 86250,
                     "exp_needed": 5000000,
                     "evolves_to": [
-                        130
+                        2443
                     ],
                     "evolves_from": null,
+                    "evolution_chain": 300,
                     "monster_series": 54,
                     "active_skill": 1568,
                     "leader_skill": 2170,
@@ -1063,9 +1065,10 @@ PADAPI is a simple API allowing for the retrieval of all information related to 
 + Response 200 (application/json)
 
         {
-            "id": 131,
-            "from_monster_id": 2440,
-            "to_monster_id": 2441
+            "id": 301,
+            "from_monster": 2440,
+            "current_monster": 2441,
+            "to_monster": null
         }
 
 ### View all Evolution [GET /evolution/{?offset,limit}]
@@ -1081,19 +1084,16 @@ PADAPI is a simple API allowing for the retrieval of all information related to 
         {
             "evolutions": [
                 {
-                    "id": 130,
-                    "from_monster_id": 2442,
-                    "to_monster_id": 2443
+                    "id": 301,
+                    "from_monster": 2440,
+                    "current_monster": 2441,
+                    "to_monster": null
                 },  
                 {
-                    "id": 131,
-                    "from_monster_id": 2440,
-                    "to_monster_id": 2441
-                },
-                {
-                    "id": 132,
-                    "from_evolution_id": 2426,
-                    "to_evolution_id": 2427
+                    "id": 302,
+                    "from_monster": null,
+                    "current_monster": 2440,
+                    "to_monster": 2441
                 }
             ],
             "total_evolutions": 10

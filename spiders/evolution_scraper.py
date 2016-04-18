@@ -101,14 +101,21 @@ class EvolutionScraper(CrawlSpider):
                     m_evolves_to.append((evo_to, evo_to_materials))
 
         with db.session.no_autoflush:
-            from_monster = Monster.query.filter_by(id=m_id).first()
+            #To 2441 shows up but from 2440 does not
+            if m_evolves_from != None and len(m_evolves_to) == 0:
+                evolution = Evolution()
+                evolution.from_monster = Monster.query.filter_by(id=m_evolves_from).first()
+                evolution.current_monster = Monster.query.filter_by(id=m_id).first()
+
+                db.session.add(evolution)
 
             for evolves_to_id, materials in m_evolves_to:
                 if Evolution.query.filter_by(to_monster_id=evolves_to_id).first() == None:
                     required_materials = [Monster.query.filter_by(id=material_id).first() for material_id in materials]
 
                     evolution = Evolution()
-                    evolution.from_monster = from_monster
+                    evolution.from_monster = Monster.query.filter_by(id=m_evolves_from).first()
+                    evolution.current_monster = Monster.query.filter_by(id=m_id).first()
                     evolution.to_monster = Monster.query.filter_by(id=evolves_to_id).first()
                     evolution.required_materials = required_materials
 

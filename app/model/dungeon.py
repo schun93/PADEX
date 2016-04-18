@@ -131,7 +131,7 @@ class Drop(db.Model):
     enemy_monster = db.relationship("EnemyMonster", backref="drops", foreign_keys="Drop.enemy_monster_id")
 
     monster_id = db.Column(db.Integer, db.ForeignKey("monster.id"))
-    monster = db.relationship("Monster", backref="dropped_by_enemy_monster_id", foreign_keys="Drop.monster_id")
+    monster = db.relationship("Monster", backref="drops", foreign_keys="Drop.monster_id")
 
     def __init__(self, chance=None):
         self.chance = chance
