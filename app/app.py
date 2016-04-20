@@ -3,6 +3,7 @@ import json
 from functools import wraps
 
 # Import Models
+from app.model.base import db, app, get_or_create
 from app.model.active_skill import ActiveSkill
 from app.model.awoken_skill import AwokenSkill
 from app.model.leader_skill import LeaderSkill
@@ -10,23 +11,13 @@ from app.model.monster_series import MonsterSeries
 from app.model.type import Type
 from app.model.element import Element
 from app.model.monster import Evolution, Monster
+from app.model.dungeon import Dungeon
 
 # Import flask and template operators
 from flask import Flask
 
 # Import SQLAlchemy
 from flask.ext.sqlalchemy import SQLAlchemy
-
-# Define the WSGI application object
-app = Flask(__name__)
-
-# Configurations
-app.config.from_object("config")
-
-# Define the database object which is imported
-# by modules and controllers
-db = SQLAlchemy(app)
-
 
 def handle_none_query(func):
     @wraps(func)
@@ -110,7 +101,12 @@ def api_evolution(evolution_id):
 @app.route("/api/v1/monster/<monster_id>")
 @handle_none_query
 def api_monster(monster_id):
-    return Monster.query.filter_by(id=monster_id).first().dictify(thinify=False)
+    return Monster.query.filter_by(id=monster_id).first().dictify()
+
+@app.route("/api/v1/dungeon/<dungeon_id>")
+@handle_none_query
+def api_dungeon(dungeon_id):
+    return Dungeon.query.filter_by(id=dungeon_id).first().dictify()
 
 # Sample HTTP error handling
 @app.errorhandler(404)

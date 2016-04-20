@@ -13,11 +13,11 @@ from scrapy.xlib.pydispatch import dispatcher
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 from app.model.base import db
 from app.model.monster import CommonMonster, Monster
-from app.model.dungeon import Dungeon, EnemySkill, EnemyMove, EnemyMonster, Drop
+from app.model.dungeon import *
 from app.model.monster_series import MonsterSeries
 from app.model.type import Type
 from app.model.element import Element
@@ -37,7 +37,7 @@ def represents_int(s):
 class DungeonScraper(CrawlSpider):
     name = "dungeon_spider"
     allowed_domains = ["puzzledragonx.com"]
-    # start_urls = ["http://puzzledragonx.com/en/mission.asp?m=2024"]
+    # start_urls = ["http://puzzledragonx.com/en/mission.asp?m=1925"]
     start_urls = [
         "http://puzzledragonx.com/en/normal-dungeons.asp",
         "http://puzzledragonx.com/en/special-dungeons.asp", 
@@ -53,8 +53,8 @@ class DungeonScraper(CrawlSpider):
         super(DungeonScraper, self).__init__(*a, **kw)
 
         print("Starting spider")
-        db.metadata.drop_all(db.engine, tables=[EnemySkill.__table__, EnemyMove.__table__, Dungeon.__table__, EnemyMonster.__table__, Drop.__table__])
-        db.metadata.create_all(db.engine, tables=[Drop.__table__, EnemyMonster.__table__, Dungeon.__table__, EnemyMove.__table__, EnemySkill.__table__])
+        db.metadata.drop_all(db.engine, tables=[EnemySkill.__table__, EnemyMove.__table__, enemy_move_move_type_n, Dungeon.__table__, Floor.__table__, FloorMemo.__table__, EnemyMonster.__table__, Drop.__table__])
+        db.metadata.create_all(db.engine, tables=[Drop.__table__, EnemyMonster.__table__, FloorMemo.__table__, Floor.__table__, Dungeon.__table__, enemy_move_move_type_n, EnemyMove.__table__, EnemySkill.__table__])
 
         dispatcher.connect(self.spider_closed, signals.spider_closed)
 
@@ -115,6 +115,13 @@ class DungeonScraper(CrawlSpider):
         try:
             move_name = tag.find_next("a").text.encode("utf-8") \
                         if move_tag == None else move_tag.find("span", {"class" : "skillexpand"}).find_next("a").text.encode("utf-8")
+
+            try:
+                move_types = [int(move_type_tag["data-original"].split("img/skill/")[1].split(".png")[0]) for move_type_tag in tag.find_next("a").find_all("img", {"data-original": re.compile("^img/skill/")})] \
+                        if move_tag == None else [int(move_type_tag["data-original"].split("img/skill/")[1].split(".png")[0]) for move_type_tag in move_tag.find("span", {"class" : "skillexpand"}).find_next("a").find_all("img", {"data-original": re.compile("^img/skill/")})]
+            except Exception as e:
+                print("Types Error:" + str(e))
+
         except Exception as e:
             return tuple([])
 
@@ -142,6 +149,11 @@ class DungeonScraper(CrawlSpider):
                 except:
                     move_description = move_description
 
+                try:
+                    move_description = move_description.split("Passive. ")[1]
+                except:
+                    move_description = move_description
+
             else:
                 move_condition = None
                 move_description = None
@@ -158,10 +170,10 @@ class DungeonScraper(CrawlSpider):
             if move_tag != None:
                 skills_left.pop(0)
 
-            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description]))
+            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description, tuple(move_types)]))
             return self.obtain_move_info(skills_left[0], result)
         else:
-            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description]))
+            result.append(tuple([move_id, move_name, move_attack, move_condition, move_description, tuple(move_types)]))
             return tuple(result)
 
     def parse_dungeon(self, response):
@@ -171,31 +183,71 @@ class DungeonScraper(CrawlSpider):
 
         d_name = soup.find("h1").text.encode("utf-8")
 
+        d_random_encounter_monsters = set()
+        d_major_encounter_monsters = set()
+        d_memos = {}
+
+        for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr"):
+            if monster_tag.find("td", text="\xc2\xa0") != None:
+                d_random_encounter_monsters.add((self.obtain_encounter_monster(monster_tag), \
+                                                 self.obtain_encounter_type(monster_tag), \
+                                                 self.obtain_turn_number(monster_tag), \
+                                                 self.obtain_attack_value(monster_tag), \
+                                                 self.obtain_defense_value(monster_tag), \
+                                                 self.obtain_hp_value(monster_tag), \
+                                                 self.obtain_move_info(monster_tag, []), \
+                                                 self.obtain_drop(monster_tag)))
+            elif represents_int(monster_tag.find_next("td").string):
+                d_major_encounter_monsters.add((self.obtain_floor_number(monster_tag), 
+                                                self.obtain_encounter_monster(monster_tag), \
+                                                self.obtain_encounter_quantity(monster_tag), \
+                                                self.obtain_encounter_type(monster_tag), \
+                                                self.obtain_turn_number(monster_tag), \
+                                                self.obtain_attack_value(monster_tag), \
+                                                self.obtain_defense_value(monster_tag), \
+                                                self.obtain_hp_value(monster_tag), \
+                                                self.obtain_move_info(monster_tag, []), \
+                                                self.obtain_drop(monster_tag)))
+            elif any([td_tag for td_tag in monster_tag.contents if td_tag.has_attr("class") and td_tag["class"][0] == "floormemo"]):
+                floor_memo = ""
+                floor_num = self.obtain_floor_number(monster_tag.next_sibling)
+
+                for tag in td_tag.contents:
+                    if type(tag) == Tag and tag.has_attr("src") and "thumbnail" in tag["src"]:
+                        floor_memo += tag["src"].split("img/thumbnail/")[1].split(".png")[0]
+                    elif type(tag) == NavigableString:
+                        floor_memo += tag.encode("utf-8")
+                    else:
+                        pass
+
+                d_memos[floor_num] = floor_memo
+            else:
+                pass
         # Monster_ID
-        d_random_encounter_monsters = {(self.obtain_encounter_monster(monster_tag), \
-                                        self.obtain_encounter_type(monster_tag), \
-                                        self.obtain_turn_number(monster_tag), \
-                                        self.obtain_attack_value(monster_tag), \
-                                        self.obtain_defense_value(monster_tag), \
-                                        self.obtain_hp_value(monster_tag), \
-                                        self.obtain_move_info(monster_tag, []), \
-                                        self.obtain_drop(monster_tag)) \
-                                        for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
-                                        if monster_tag.find("td", text="\xc2\xa0") != None}
+        # d_random_encounter_monsters = {(self.obtain_encounter_monster(monster_tag), \
+        #                                 self.obtain_encounter_type(monster_tag), \
+        #                                 self.obtain_turn_number(monster_tag), \
+        #                                 self.obtain_attack_value(monster_tag), \
+        #                                 self.obtain_defense_value(monster_tag), \
+        #                                 self.obtain_hp_value(monster_tag), \
+        #                                 self.obtain_move_info(monster_tag, []), \
+        #                                 self.obtain_drop(monster_tag)) \
+        #                                 for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
+        #                                 if monster_tag.find("td", text="\xc2\xa0") != None}
         
-        # Floor #, Monster_ID, Quantity, Type, Turn, Attack, Defense, HP
-        d_major_encounter_monsters = {( self.obtain_floor_number(monster_tag), 
-                                        self.obtain_encounter_monster(monster_tag), \
-                                        self.obtain_encounter_quantity(monster_tag), \
-                                        self.obtain_encounter_type(monster_tag), \
-                                        self.obtain_turn_number(monster_tag), \
-                                        self.obtain_attack_value(monster_tag), \
-                                        self.obtain_defense_value(monster_tag), \
-                                        self.obtain_hp_value(monster_tag), \
-                                        self.obtain_move_info(monster_tag, []), \
-                                        self.obtain_drop(monster_tag)) \
-                                        for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
-                                        if represents_int(monster_tag.find_next("td").string)}
+        # # Floor #, Monster_ID, Quantity, Type, Turn, Attack, Defense, HP
+        # d_major_encounter_monsters = {( self.obtain_floor_number(monster_tag), 
+        #                                 self.obtain_encounter_monster(monster_tag), \
+        #                                 self.obtain_encounter_quantity(monster_tag), \
+        #                                 self.obtain_encounter_type(monster_tag), \
+        #                                 self.obtain_turn_number(monster_tag), \
+        #                                 self.obtain_attack_value(monster_tag), \
+        #                                 self.obtain_defense_value(monster_tag), \
+        #                                 self.obtain_hp_value(monster_tag), \
+        #                                 self.obtain_move_info(monster_tag, []), \
+        #                                 self.obtain_drop(monster_tag)) \
+                                        # for monster_tag in soup.find("div", {"id" : "dungeon-info"}).find_next("table", id="tabledrop").find_all("tr") \
+                                        # if represents_int(monster_tag.find_next("td").string)}
 
         dungeon = Dungeon(id=d_id, name=d_name)
         db.session.add(dungeon)
@@ -217,23 +269,39 @@ class DungeonScraper(CrawlSpider):
                 db.session.add(drop)
                 db.session.commit()
 
-            for move_id, move_name, move_attack, move_condition, move_description in moves_info:
+            for move_id, move_name, move_attack, move_condition, move_description, move_types in moves_info:
                 if EnemySkill.query.filter_by(id=move_id).first() == None:
                     db.session.add(EnemySkill(id=move_id, name=move_name, effect=move_description))
                     db.session.commit()
-
+ 
                 enemy_skill = EnemySkill.query.filter_by(id=move_id).first()
                 enemy_move = EnemyMove(atk_condition=move_condition, atk=move_attack)
                 enemy_move.enemy_skill = enemy_skill
                 enemy_move.enemy_monster = enemy_monster
+                enemy_move.enemy_move_types = [EnemyMoveType.query.filter_by(id=move_type).first() for move_type in move_types if move_type != 0]
 
                 db.session.add(enemy_move)
                 db.session.commit()
 
         for floor, monster_id, quantity, monster_type, turn, atk, defn, hp, moves_info, drops in d_major_encounter_monsters:            
-            enemy_monster = EnemyMonster(hp=hp, atk=atk, defn=defn, turn=turn, floor=floor, quantity=quantity)
+            enemy_monster = EnemyMonster(hp=hp, atk=atk, defn=defn, turn=turn, quantity=quantity)
             enemy_monster.common_monster = CommonMonster.query.filter_by(id=monster_id).first()
-            enemy_monster.major_encounter_in_dungeon = dungeon
+
+            if Floor.query.filter_by(dungeon_id=d_id, number=floor).first() == None:
+                floor = Floor(number=floor)
+                floor.dungeon = dungeon
+
+                if floor.number in d_memos:
+                    floor_memo = FloorMemo(memo=d_memos[floor.number])
+                    floor_memo.floor = floor
+                    db.session.add(floor_memo)
+
+                db.session.add(floor)
+                db.session.commit()
+            else:
+                floor = Floor.query.filter_by(dungeon_id=d_id, number=floor).first()
+
+            enemy_monster.major_encounter_on_floor = floor
 
             db.session.add(enemy_monster)
             db.session.commit()
@@ -246,7 +314,7 @@ class DungeonScraper(CrawlSpider):
                 db.session.add(drop)
                 db.session.commit()
 
-            for move_id, move_name, move_attack, move_condition, move_description in moves_info:
+            for move_id, move_name, move_attack, move_condition, move_description, move_types in moves_info:
                 if EnemySkill.query.filter_by(id=move_id).first() == None:
                     db.session.add(EnemySkill(id=move_id, name=move_name, effect=move_description))
                     db.session.commit()
@@ -255,6 +323,7 @@ class DungeonScraper(CrawlSpider):
                 enemy_move = EnemyMove(atk_condition=move_condition, atk=move_attack)
                 enemy_move.enemy_skill = enemy_skill
                 enemy_move.enemy_monster = enemy_monster
+                enemy_move.enemy_move_types = [EnemyMoveType.query.filter_by(id=move_type).first() for move_type in move_types if move_type != 0]
 
                 db.session.add(enemy_move)
                 db.session.commit()

@@ -24,13 +24,7 @@ class ActiveSkill(db.Model):
         self.max_lvl = max_lvl
 
     def __str__(self):
-        return "\nID: " + str(self.id) + \
-               "\nName: " + self.name + \
-               "\nEffect: " + self.effect + \
-               "\nOriginal Effect: " + self.original_effect + \
-               "\nMax CD: " + str(self.max_cd) + \
-               "\nMin CD: " + str(self.min_cd) + \
-               "\nMax Lvl: " + str(self.max_lvl)
+        return str(self.dictify(thinify=False))
 
     def dictify(self, thinify=True):
         dictified = OrderedDict()

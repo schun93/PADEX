@@ -7,6 +7,7 @@ monster_thumbnails_hd/
 spiders/output/
 env/
 .DS_Store
+skill_images/
 
 # Xcode
 #

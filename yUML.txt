@@ -2,11 +2,15 @@
 
 [ CommonMonster | id: PK.Int; name:String; primary_type:FK.Type.id; secondary_type:FK.Type.id; ternary_type:FK.Type.id; primary_element:FK.Element.id; secondary_element:FK.Element.id; img:String ]
 
-[ Dungeon | id:PK.Int; name:String; random_encounters:list(FK.EnemyMonster.id); major_encounters:list(FK.EnemyMonster.id) ]
+[ Dungeon | id:PK.Int; name:String; random_encounters:list(FK.EnemyMonster.id); floors:list(FK.Floor.id) ]
 
 [ EnemyMonster | id:PK.Int; hp:Int; atk:Int; defn:Int; turn:Int; floor:Int; quantity:Int; common_monster:FK.CommonMonster.id; dungeon:FK.Dungeon.id; moves:list(FK.EnemyMove.id), drop:list(FK.Drop.id) ]
 
 [ EnemyMove | id:PK.Int; dungeon_monster_id:FK.EnemyMonster.id; atk:Int; attack_condition:String; skill:FK.EnemySkill.id ]
+
+[ EnemyMoveType | id:PK.Int; name:String; img:String ]
+
+[ enemy_move_move_type_n | id:PK.Int; enemy_move:FK.EnemyMove.id; enemy_move_type:FK.EnemyMoveType.id ]
 
 [ EnemySkill | id:PK.Int; name:String; effect:String; part_of_moves:list(FK.EnemyMove.id) ]
 
@@ -34,14 +38,34 @@
 
 [ Drop | id:PK.Int; enemy_monster_id:FK.EnemyMonster.id; common_monster_id:FK.CommonMonster.id; chance:Int]
 
+[ Floor | id:PK.Int; dungeon:FK.Dungeon.id; floor_memo:FK.FloorMemo.id; major_encounters:list(FK.EnemyMonster.id) ]
+
+[ FloorMemo | id:PK.Int; memo:String ]
+
 // Dungeon UML
 
 [Dungeon]1-*[EnemyMonster]
+[Dungeon]1-*[Floor]
 [EnemyMonster]1-*[EnemyMove]
 [EnemyMonster]*-1[CommonMonster]
 [EnemyMonster]1-*[Drop]
 [EnemySkill]1-*[EnemySkill-Monster-N]
 [EnemyMove]*-1[EnemySkill]
+[EnemyMove]1-*[enemy_move_move_type_n]
+
+
+// Floor UML
+
+[Floor]1-*[EnemyMonster]
+
+
+// FloorMemo UML
+
+[FloorMemo]1-1[Floor]
+
+// EnemyMoveType UML
+
+[EnemyMoveType]1-*[enemy_move_move_type_n]
 
 
 // Monster UML

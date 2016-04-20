@@ -39,16 +39,22 @@ class CommonMonster(db.Model):
         self.thmb = thmb
 
     def __str__(self):
-        return "\nID: " + str(self.id) + \
-               "\nName: " + str(self.name) + \
-               "\nIMG: " + str(self.img) + \
-               "\nTHMB: " + str(self.thmb) + \
-               "\nPrimary Type: " + str(self.primary_type) + \
-               "\nSecondary Type: " + str(self.secondary_type) + \
-               "\nTernary Type: " + str(self.ternary_type) + \
-               "\nPrimary Element: " + str(self.primary_element) + \
-               "\nSecondary Element: " + str(self.secondary_element) + \
-               "\nMonster: " + str(self.monster)
+        return str(self.dictify())
+
+    def dictify(self):
+        dictified = OrderedDict()
+        dictified["id"] = self.id
+        dictified["name"] = self.name
+        dictified["img"] = self.img
+        dictified["thmb"] = self.thmb
+        dictified["primary_type"] = self.primary_type_id
+        dictified["secondary_type"] = self.secondary_type_id
+        dictified["ternary_type"] = self.ternary_type_id
+        dictified["primary_element"] = self.primary_element_id
+        dictified["secondary_element"] = self.secondary_element_id
+        dictified["monster"] = self.monster_id
+
+        return dictified
 
 awoken_skill_monster_n = db.Table("awoken_skill_monster_n", 
                                   db.Column("id", db.Integer, primary_key=True),
@@ -112,30 +118,10 @@ class Monster(db.Model):
         self.max_exp_feed = max_exp_feed
         self.exp_needed = exp_needed
 
-        #List of dungeon_id foreign key
-        # self.obtainable_in_dungeons = obtainable_in_dungeons
-
     def __str__(self):
-        return  "ID: " + str(self.id) + \
-                "\nName: " + str(self.name) + \
-                "\nRarity: " + str(self.rarity) + \
-                "\nTeam Cost: " + str(self.team_cost) + \
-                "\nMonster Points: " + str(self.sells_for_monster_points) + \
-                "\nEvolves To: " + str(self.evolves_to) + \
-                "\nEvolves From: " + str(self.evolves_from) + \
-                "\nLvl: " + str(self.min_lvl) + "\t- " + str(self.max_lvl) + \
-                "\nHP: " + str(self.min_hp) + "\t- " + str(self.max_hp) + \
-                "\nATK: " + str(self.min_atk) + "\t- " + str(self.max_atk) + \
-                "\nRCV: " + str(self.min_rcv) + "\t- " + str(self.max_rcv) + \
-                "\nSell Value: " + str(self.min_sell_value) + "\t- " + str(self.max_sell_value) + \
-                "\nFeed Value: " + str(self.min_exp_feed) + "\t- " + str(self.max_exp_feed) + \
-                "\nExp Needed: " + str(self.exp_needed) + \
-                "\nActive Skill: " + str(self.active_skill) + \
-                "\nLeader Skill: " + str(self.leader_skill) + \
-                "\nAwoken Skills: " + str(self.awoken_skills) + \
-                "\nMonster Series: " + str(self.monster_series)
+        return str(self.dictify())
 
-    def dictify(self, thinify=True):
+    def dictify(self):
         dictified = OrderedDict()
         dictified["id"] = self.id
         dictified["name"] = self.name
@@ -203,7 +189,7 @@ class Evolution(db.Model):
         pass
 
     def __str__(self):
-        pass
+        return str(self.dictify())
 
     def dictify(self):
         dictified = OrderedDict()

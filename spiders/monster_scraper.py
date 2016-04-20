@@ -36,59 +36,12 @@ class MonsterScraper(CrawlSpider):
         super(MonsterScraper, self).__init__(*a, **kw)
 
         print("Starting spider")
-        db.metadata.drop_all(db.engine, tables=[awoken_skill_monster_n])
-        db.metadata.drop_all(db.engine, tables=[CommonMonster.__table__])
-        db.metadata.drop_all(db.engine, tables=[Monster.__table__])
-        db.metadata.drop_all(db.engine, tables=[Element.__table__])
-        db.metadata.drop_all(db.engine, tables=[Type.__table__])
-        # db.metadata.drop_all(db.engine, tables=[Type.__table__, Element.__table__, Monster.__table__, CommonMonster.__table__, awoken_skill_monster_n])
+        db.metadata.drop_all(db.engine, tables=[Type.__table__, Element.__table__, Monster.__table__, CommonMonster.__table__, awoken_skill_monster_n])
         db.metadata.create_all(db.engine, tables=[awoken_skill_monster_n, Monster.__table__, CommonMonster.__table__, Type.__table__, Element.__table__])
-
-        self.monsters = {}
-        self.common_monsters = {}
-        self.types = {}
-        self.elements = {}
 
         dispatcher.connect(self.spider_closed, signals.spider_closed)
 
     def spider_closed(self, spider):
-        print("Populating Monster table")
-        for monster in self.monsters.itervalues():
-            print("Monster ID: " + str(monster.id))
-            # db.session.add(monster)
-            # db.session.commit()
-
-        for common_monster in self.common_monsters.itervalues():
-            print("Common Monster ID: " + str(common_monster.id))
-            # db.session.add(common_monster)
-            # db.session.commit()
-
-        for type in self.types.itervalues():
-            print("Type ID: " + str(type.id))
-            # db.session.add(type)
-            # db.session.commit()
-
-        for element in self.elements.itervalues():
-            print("Element ID: " + str(element.id))
-            # db.session.add(element)
-            # db.session.commit()
-
-        print("Populated Monster table")
-
-        print("Monsters dict contains " + str(len(self.monsters)) + " elements.")
-        print("Monster TABLE contains " + str(len(Monster.query.all())) + " rows.")
-
-        print("Populated CommonMonster table")
-
-        print("CommonMonsters dict contains " + str(len(self.common_monsters)) + " elements.")
-        print("CommonMonster TABLE contains " + str(len(CommonMonster.query.all())) + " rows.")
-
-        print("Types dict contains " + str(len(self.types)) + " elements.")
-        print("Type TABLE contains " + str(len(Type.query.all())) + " rows.")
-
-        print("Elements dict contains " + str(len(self.elements)) + " elements.")
-        print("Element TABLE contains " + str(len(Element.query.all())) + " rows.")
-
         print("Stopping Spider")
 
     def parse_monster(self, response):
